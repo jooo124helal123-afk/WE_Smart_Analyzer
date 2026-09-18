@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مدير استهلاك باقة WE - المحلل الذكي</title>
+    <style>
+        * { box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+        :root {
+            --bg: #0f1115; --panel: #1a1d24; --border: #2d3139; --text: #e4e5e7;
+            --muted: #a0a5b1; --accent: #8b40c6; --accent2: #5c2a82;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Arial, sans-serif;
+            background-color: var(--bg); color: var(--text); margin: 0; padding: 10px;
+            display: flex; justify-content: center; width: 100%; min-height: 100vh; overflow-x: hidden;
+        }
+        .container { width: 100%; max-width: 500px; position: relative; }
+
+        .box-panel {
+            background-color: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+            padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .we-logo {
+            text-align: center; color: var(--accent2); font-size: 22px; font-weight: bold; margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(92, 42, 130, 0.5); user-select: none;
+        }
+
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; margin-bottom: 4px; color: var(--muted); font-size: 12.5px; font-weight: bold; }
+        .input-dark, .app-limit-input {
+            background-color: #14151a; border: 1px solid var(--border); color: #fff;
+            padding: 10px; border-radius: 8px; box-sizing: border-box; outline: none; transition: 0.3s;
+            -webkit-user-select: text; user-select: text; width: 100%; font-size: 15px;
+        }
+        .app-limit-input { width: 70px; }
+        .input-dark:focus, .app-limit-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(139, 64, 198, 0.2); }
+
+        .btn-ai {
+            background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%); color: #fff;
+            border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold;
+            cursor: pointer; width: 100%; transition: 0.3s; margin-top: 8px;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-ai:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(92, 42, 130, 0.4); }
+        .btn-ai-apps { background: linear-gradient(135deg, #2b8a3e 0%, #40c057 100%); margin-top: 12px; }
+        .btn-ai-apps:hover { box-shadow: 0 5px 15px rgba(43, 138, 62, 0.4); }
+
+        .processing-box {
+            display: none; text-align: center; padding: 20px 10px;
+            border: 1px dashed var(--accent); border-radius: 10px; margin-top: 15px;
+            background-color: rgba(92, 42, 130, 0.05);
+        }
+        .spinner {
+            width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1);
+            border-left-color: var(--accent); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 10px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .timer-text { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 6px;}
+        .ai-status { font-size: 12px; color: var(--muted); }
+
+        .report-box { display: none; margin-top: 15px; padding: 15px; border-radius: 10px; animation: slideUp 0.5s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .report-header { font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;}
+        .report-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom:4px;}
+
+        .status-safe { background-color: rgba(43, 138, 62, 0.1); border: 1px solid #2b8a3e; color: #b2f2bb; }
+        .status-warning { background-color: rgba(230, 119, 0, 0.1); border: 1px solid #e67700; color: #ffe066; }
+        .status-danger { background-color: rgba(201, 42, 42, 0.1); border: 1px solid #c92a2a; color: #ffc9c9; }
+
+        .ai-advice { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 12.5px; line-height: 1.5; border-right: 3px solid var(--accent); }
+
+        .section-header h3 { margin: 0 0 4px 0; font-size: 15px; color: #fff; }
+        .section-header p { margin: 0 0 12px 0; font-size: 11.5px; color: #8e919b; }
+
+        .active-app-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--border); animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .app-title-group { display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden; }
+        .app-emoji { font-size: 16px; flex-shrink: 0; }
+        .app-name-text { color: #fff; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .remove-btn { background: none; border: none; color: #5c5f66; cursor: pointer; font-size: 16px; padding: 0 4px; transition: 0.2s; display: none; }
+        .remove-btn:hover { color: #fa5252; }
+
+        .btn-add-global {
+            background-color: transparent; border: 1px dashed var(--accent); color: #b197fc;
+            padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer;
+            width: 100%; margin-top: 12px; transition: 0.2s; text-align: center; display: none;
+        }
+        .btn-add-global:hover { background-color: rgba(139, 64, 198, 0.1); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content { background-color: var(--panel); width: 92%; max-width: 400px; border-radius: 12px; border: 1px solid var(--border); max-height: 80vh; display: flex; flex-direction: column; }
+        .modal-header { padding: 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .close-modal { background: none; border: none; color: #8e919b; font-size: 22px; cursor: pointer; line-height: 1; }
+        .modal-body { padding: 12px; overflow-y: auto; }
+        .list-app-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .list-app-info { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 13.5px;}
+        .btn-add-small { background-color: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 11.5px;}
+
+        .switch { position: relative; display: inline-block; width: 34px; height: 18px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: #8e919b; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(16px); background-color: #fff;}
+
+        .custom-app-form { background-color: #14151a; border: 1px solid var(--border); padding: 10px; border-radius: 8px; margin-top: 12px; display: none; }
+        .custom-app-form h4 { margin: 0 0 8px 0; font-size: 12.5px; color: #b197fc; }
+
+        .admin-login-btn { position: absolute; top: 10px; left: 12px; background: none; border: none; color: #8e919b; font-size: 11.5px; cursor: pointer; padding: 4px; z-index: 10; font-weight: bold; }
+        .admin-login-btn:hover { color: #b197fc; }
+
+        .admin-panel { background-color: rgba(250, 82, 82, 0.05); border: 1px dashed #fa5252; display: none; margin-bottom: 15px; }
+        .btn-danger { background-color: #fa5252; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12.5px; font-weight:bold; width: 100%; margin-top: 4px;}
+
+        .developer-footer {
+            background-color: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+            padding: 15px; text-align: center; margin-top: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .dev-badge {
+            width: 45px; height: 45px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%);
+            color: #fff; display: flex; justify-content: center; align-items: center;
+            font-size: 15px; font-weight: bold; border: 2px solid #b197fc;
+            box-shadow: 0 0 10px rgba(139, 64, 198, 0.5); letter-spacing: 1px;
+        }
+        .developer-footer p { margin: 0; font-size: 12.5px; color: var(--muted); }
+        .developer-footer span { color: #b197fc; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="box-panel admin-panel" id="adminPanel">
+        <h3 style="color: #fa5252; margin-top:0; font-size:14px;">🔒 لوحة تحكم المطور المتقدمة</h3>
+        <p style="font-size: 11.5px; color: var(--muted); margin-bottom: 8px;">منطقة التحكم السرية:</p>
+        <input type="text" id="newDbAppName" class="input-dark" placeholder="اسم التطبيق الجديد" style="margin-bottom:6px; font-size:13px; padding:8px;">
+        <input type="text" id="newDbAppEmoji" class="input-dark" placeholder="الإيموجي (مثال: 🌐)" maxlength="2" style="margin-bottom:6px; font-size:13px; padding:8px;">
+        <input type="number" id="newDbAppLimit" class="input-dark" placeholder="الاستهلاك الافتراضي (ميجا)" min="0" style="margin-bottom:6px; font-size:13px; padding:8px;">
+        <button class="btn-danger" onclick="addAppToDatabase()">إضافة التطبيق لقاعدة البيانات</button>
+        <button class="btn-danger" style="background-color:#5c5f66; margin-top:6px;" onclick="logoutAdmin()">إغلاق وقفل اللوحة</button>
+    </div>
+
+    <div class="box-panel">
+        <button class="admin-login-btn" id="adminBtn" onclick="requestDeveloperAccess()">⚙️ Admin</button>
+        <div class="we-logo">🌐 WE Smart Analyzer</div>
+
+        <div class="input-group">
+            <label>1. بداية الاشتراك</label>
+            <input type="date" id="subDate" class="input-dark">
+        </div>
+        <div class="input-group">
+            <label>2. حجم الباقة الأساسي (بالجيجا)</label>
+            <input type="number" id="totalGB" class="input-dark" placeholder="مثال: 140" min="1">
+        </div>
+        <div class="input-group">
+            <label>3. ما تم استهلاكه (بالجيجا)</label>
+            <input type="number" id="usedGB" class="input-dark" placeholder="مثال: 60" min="0">
+        </div>
+        <div class="input-group">
+            <label>4. المتبقي في الباقة (بالجيجا)</label>
+            <input type="number" id="remGB" class="input-dark" placeholder="يتم حسابه تلقائياً" readonly style="opacity:0.7; cursor:not-allowed;">
+        </div>
+        <div class="input-group">
+            <label>5. الأيام المتبقية على التجديد</label>
+            <input type="number" id="remDays" class="input-dark" placeholder="مثال: 12" min="1">
+        </div>
+
+        <button class="btn-ai" onclick="startGeneralAIAnalysis()"><span>🧠 تحليل الذكاء الاصطناعي (العام)</span></button>
+
+        <div class="processing-box" id="generalProcessingBox">
+            <div class="spinner"></div>
+            <div class="timer-text">جاري التحليل العام: <span id="generalCountdown">5</span> ثواني</div>
+            <div class="ai-status" id="generalAiStatus">فحص السعة والأيام المتبقية...</div>
+        </div>
+
+        <div class="report-box" id="generalReportBox">
+            <div class="report-header" id="generalReportTitle"></div>
+            <div class="report-row"><span style="color:var(--muted)">الاستهلاك اليومي الفعلي:</span><strong id="actualDaily">0 جيجا/يوم</strong></div>
+            <div class="report-row"><span style="color:var(--muted)">الاستهلاك اليومي المسموح:</span><strong id="allowedDaily">0 جيجا/يوم</strong></div>
+            <div class="ai-advice" id="generalAiAdviceText"></div>
+        </div>
+    </div>
+
+    <div class="box-panel">
+        <div class="section-header">
+            <h3>استخدام التطبيقات حسب أولوياتك</h3>
+            <p>حدد استخدامك بالجيجا لكل تطبيق (مثال: 1 جيجا، 0.5 جيجا...).</p>
+        </div>
+        <div class="ai-advice" style="border-right-color:#e67700; margin-bottom:12px;">
+            ⚠️ <b>نصيحة:</b> الإفراط في استخدام تطبيقات الفيديو والألعاب بيستهلك باقتك بسرعة كبيرة، وبيقلل وقتك المفيد وتركيزك في المذاكرة، وممكن يأثر على نومك لو الاستخدام بالليل. حاول توازن استخدامك اليومي وخصص وقت محدد لكل تطبيق.
+        </div>
+        <div id="activeAppsContainer"></div>
+        <button class="btn-add-global" id="btnAddGlobalApp" onclick="openModal()">+ إضافة تطبيق أو لعبة من القائمة (20+)</button>
+        <button class="btn-ai btn-ai-apps" onclick="startAppsAIAnalysis()"><span>🧠 التحليل الذكي المتقدم للتطبيقات</span></button>
+
+        <div class="processing-box" id="appsProcessingBox">
+            <div class="spinner"></div>
+            <div class="timer-text">تحليل أولويات التطبيقات: <span id="appsCountdown">5</span> ثواني</div>
+            <div class="ai-status" id="appsAiStatus">جاري توزيع الاستهلاك بحسب الأيام...</div>
+        </div>
+
+        <div class="report-box" id="appsReportBox">
+            <div class="report-header" style="color: #40c057;">📊 تقرير توزيع الاستهلاك على التطبيقات</div>
+            <div class="ai-advice" id="appsAiAdviceText" style="border-right-color: #40c057;"></div>
+        </div>
+    </div>
+
+    <div class="developer-footer">
+        <div class="dev-badge">Y.H</div>
+        <p>تم تصميم وتطوير الموقع بواسطة الطالب:<br><span>يوسف هلال أحمد</span> 🚀</p>
+    </div>
+</div>
+
+<div class="modal-overlay" id="appModal" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 style="margin:0; font-size:15px; color:#fff;">قائمة التطبيقات والألعاب المتاحة</h3>
+            <button class="close-modal" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div id="modalAppList"></div>
+            <div class="custom-app-form" id="customAppFormContainer">
+                <h4>➕ إضافة تطبيق مخصص جديد (خاص بالمطور)</h4>
+                <input type="text" id="customName" class="input-dark" placeholder="اسم التطبيق (مثال: Zoom)" style="margin-bottom:6px; font-size:13px; padding:8px;">
+                <input type="text" id="customEmoji" class="input-dark" placeholder="الإيموجي (مثال: 💻)" maxlength="2" style="margin-bottom:6px; font-size:13px; padding:8px;">
+                <input type="number" id="customLimit" class="input-dark" placeholder="الاستهلاك المقدر (ميجا)" min="0" style="margin-bottom:6px; font-size:13px; padding:8px;">
+                <button class="btn-ai" style="margin-top:0; padding:8px; font-size:12px;" onclick="addCustomApp()">إضافة للقائمة النشطة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        const blocked =
+            e.keyCode == 123 ||
+            (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) ||
+            (e.ctrlKey && e.keyCode == 85) ||
+            (e.metaKey && e.altKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67));
+        if (blocked) { e.preventDefault(); alert("⚠️ هذه المنطقة محمية. مخصصة للمطور فقط!"); return false; }
+    });
+
+    const ENCODED_USER = "QFlvdXNzZWYuSGVsYWw=";
+    const ENCODED_PASS = "WTFZMlkzWTR5NXk2eTc=";
+    let isAdminLoggedIn = false;
+
+    const MAX_ATTEMPTS = 3;
+    const LOCK_MS = 30000;
+    let failedAttempts = 0;
+    let lockUntil = 0;
+    function isLocked() { return Date.now() < lockUntil; }
+    function remainingLockSeconds() { return Math.ceil((lockUntil - Date.now()) / 1000); }
+
+    // كل الأرقام هنا بالجيجا (GB) عشان تبقى موحدة مع باقي الموقع
+    let availableApps = [
+        { id: 'tiktok', name: 'TikTok', emoji: '🎵', defaultLimit: 0.6 },
+        { id: 'youtube', name: 'YouTube', emoji: '▶️', defaultLimit: 0.8 },
+        { id: 'pubg', name: 'PUBG Mobile', emoji: '🪂', defaultLimit: 0.4 },
+        { id: 'facebook', name: 'Facebook', emoji: '📘', defaultLimit: 0.3 },
+        { id: 'instagram', name: 'Instagram', emoji: '📸', defaultLimit: 0.4 },
+        { id: 'netflix', name: 'Netflix', emoji: '🍿', defaultLimit: 0.9 },
+        { id: 'whatsapp', name: 'WhatsApp', emoji: '💬', defaultLimit: 0.15 },
+        { id: 'telegram', name: 'Telegram', emoji: '✈️', defaultLimit: 0.2 },
+        { id: 'roblox', name: 'Roblox', emoji: '🧱', defaultLimit: 0.3 },
+        { id: 'freefire', name: 'Free Fire', emoji: '🔥', defaultLimit: 0.3 },
+        { id: 'pes', name: 'eFootball', emoji: '⚽', defaultLimit: 0.2 },
+        { id: 'snapchat', name: 'Snapchat', emoji: '👻', defaultLimit: 0.3 },
+        { id: 'X', name: 'X (Twitter)', emoji: '🧷', defaultLimit: 0.2 },
+        { id: 'spotify', name: 'Spotify', emoji: '🎧', defaultLimit: 0.2 },
+        { id: 'twitch', name: 'Twitch', emoji: '🎮', defaultLimit: 0.5 },
+        { id: 'zoom', name: 'Zoom / Meetings', emoji: '💼', defaultLimit: 0.4 },
+        { id: 'google_drive', name: 'Google Drive', emoji: '📁', defaultLimit: 0.1 },
+        { id: 'anghami', name: 'Anghami', emoji: '🎶', defaultLimit: 0.2 },
+        { id: 'discord', name: 'Discord', emoji: '🤖', defaultLimit: 0.2 },
+        { id: 'reddit', name: 'Reddit', emoji: '🤖', defaultLimit: 0.15 }
+    ];
+
+    let userApps = [
+        { id: 'tiktok', name: 'TikTok', emoji: '🎵', isActive: true, currentLimit: 0.6 },
+        { id: 'youtube', name: 'YouTube', emoji: '▶️', isActive: true, currentLimit: 0.8 },
+        { id: 'pubg', name: 'PUBG Mobile', emoji: '🪂', isActive: true, currentLimit: 0.4 }
+    ];
+
+    document.getElementById('usedGB').addEventListener('input', function() {
+        let total = parseFloat(document.getElementById('totalGB').value) || 0;
+        let used = parseFloat(this.value) || 0;
+        if(used < 0) { used = 0; this.value = 0; }
+        let rem = total - used;
+        if(rem < 0) rem = 0;
+        document.getElementById('remGB').value = rem;
+    });
+
+    document.getElementById('totalGB').addEventListener('input', function() {
+        let total = parseFloat(this.value) || 0;
+        let used = parseFloat(document.getElementById('usedGB').value) || 0;
+        let rem = total - used;
+        if(rem < 0) { rem = 0; document.getElementById('usedGB').value = total; }
+        document.getElementById('remGB').value = rem;
+    });
+
+    function calculateDaysPassed(subDateStr) {
+        if(!subDateStr) return null;
+        const subDate = new Date(subDateStr + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        let diffDays = Math.round((today - subDate) / (1000 * 60 * 60 * 24));
+        if(isNaN(diffDays) || diffDays < 1) diffDays = 1;
+        return diffDays;
+    }
+
+    function requestDeveloperAccess() {
+        if(isAdminLoggedIn) { document.getElementById('adminPanel').style.display = 'block'; return; }
+        if(isLocked()) { alert("⛔ تم قفل محاولات الدخول مؤقتاً. حاول بعد " + remainingLockSeconds() + " ثانية."); return; }
+
+        let u = prompt("⚠️ هذه الخاصية مخصصة للمطور فقط.\n\nضع اليوزر (اسم المستخدم):");
+        if(!u) return;
+        let p = prompt("ضع الباسورد (كلمة المرور):");
+        if(!p) return;
+        u = u.trim(); p = p.trim();
+
+        try {
+            if(btoa(u) === ENCODED_USER && btoa(p) === ENCODED_PASS) {
+                isAdminLoggedIn = true; failedAttempts = 0;
+                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('btnAddGlobalApp').style.display = 'block';
+                document.getElementById('customAppFormContainer').style.display = 'block';
+                renderActiveApps();
+                alert("✅ تم التحقق بنجاح. تم فتح لوحة التحكم المتقدمة.");
+            } else {
+                failedAttempts++;
+                if(failedAttempts >= MAX_ATTEMPTS) {
+                    lockUntil = Date.now() + LOCK_MS; failedAttempts = 0;
+                    alert("⛔ محاولات كتير غلط. اتقفل الدخول 30 ثانية.");
+                } else {
+                    alert("❌ بيانات دخول غير صحيحة! (محاولة " + failedAttempts + " من " + MAX_ATTEMPTS + ")");
+                }
+            }
+        } catch(e) { alert("خطأ في المصادقة."); }
+    }
+
+    function logoutAdmin() {
+        isAdminLoggedIn = false;
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('btnAddGlobalApp').style.display = 'none';
+        document.getElementById('customAppFormContainer').style.display = 'none';
+        renderActiveApps();
+        alert("🔒 تم إغلاق وقفل لوحة المطور.");
+    }
+
+    function addAppToDatabase() {
+        if(!isAdminLoggedIn) { alert("غير مسموح لك بالإضافة!"); return; }
+        let nameRaw = document.getElementById('newDbAppName').value;
+        if(nameRaw.trim() === "") { alert("يجب كتابة اسم التطبيق!"); return; }
+        let name = nameRaw.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        let emoji = document.getElementById('newDbAppEmoji').value || '📱';
+        let limit = parseFloat(document.getElementById('newDbAppLimit').value) || 200;
+        availableApps.push({ id: 'app_' + Math.random().toString(36).substr(2,5), name: name, emoji: emoji, defaultLimit: limit });
+        document.getElementById('newDbAppName').value = '';
+        document.getElementById('newDbAppEmoji').value = '';
+        document.getElementById('newDbAppLimit').value = '';
+        alert("تمت إضافة التطبيق للقاعدة بنجاح.");
+    }
+
+    function openModal() { document.getElementById('appModal').style.display = 'flex'; renderModalList(); }
+    function closeModal() { document.getElementById('appModal').style.display = 'none'; }
+
+    function renderModalList() {
+        const modalList = document.getElementById('modalAppList');
+        modalList.innerHTML = '<div style="font-size:11.5px; color:#8e919b; margin-bottom:8px;">اختر من القائمة الجاهزة:</div>';
+        availableApps.forEach(app => {
+            if(userApps.find(ua => ua.id === app.id)) return;
+            let div = document.createElement('div');
+            div.className = 'list-app-item';
+            div.innerHTML = `<div class="list-app-info"><span class="app-emoji">${app.emoji}</span><span>${app.name}</span></div><button class="btn-add-small" onclick="addAppToActive('${app.id}')">إضافة</button>`;
+            modalList.appendChild(div);
+        });
+    }
+
+    function addAppToActive(appId) {
+        let app = availableApps.find(a => a.id === appId);
+        if(app && !userApps.find(ua => ua.id === appId)) {
+            userApps.push({ ...app, isActive: true, currentLimit: app.defaultLimit });
+            closeModal(); renderActiveApps();
+        }
+    }
+
+    function addCustomApp() {
+        if(!isAdminLoggedIn) { alert("ميزة مخصصة للمطور فقط!"); return; }
+        let nameRaw = document.getElementById('customName').value;
+        if(nameRaw.trim() === "") { alert("يرجى كتابة اسم التطبيق."); return; }
+        let name = nameRaw.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        let emoji = document.getElementById('customEmoji').value || '💻';
+        let limit = parseFloat(document.getElementById('customLimit').value) || 200;
+        let customId = 'custom_' + Math.random().toString(36).substr(2,5);
+        userApps.push({ id: customId, name: name, emoji: emoji, isActive: true, currentLimit: limit });
+        document.getElementById('customName').value = '';
+        document.getElementById('customEmoji').value = '';
+        document.getElementById('customLimit').value = '';
+        closeModal(); renderActiveApps();
+    }
+
+    function removeApp(appId) {
+        if(!isAdminLoggedIn) { alert("حذف التطبيقات مخصص للمطور فقط!"); return; }
+        userApps = userApps.filter(a => a.id !== appId);
+        renderActiveApps();
+    }
+
+    function renderActiveApps() {
+        const container = document.getElementById('activeAppsContainer');
+        container.innerHTML = '';
+        if(userApps.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:12px; color:#8e919b; font-size:12px;">لم تقم بإضافة أي تطبيق بعد.</div>';
+            return;
+        }
+        userApps.forEach(app => {
+            let div = document.createElement('div');
+            div.className = 'active-app-item';
+            let deleteBtnDisplay = isAdminLoggedIn ? 'inline-block' : 'none';
+            div.innerHTML = `
+                <div class="app-title-group"><span class="app-emoji">${app.emoji}</span><span class="app-name-text">${app.name}</span></div>
+                <div style="display:flex; align-items:center;">
+                    <input type="number" class="app-limit-input" value="${app.currentLimit||0}" oninput="updateAppLimit('${app.id}', this.value)" min="0">
+                    <label class="switch"><input type="checkbox" ${app.isActive?'checked':''} onchange="toggleApp('${app.id}', this.checked)"><span class="slider"></span></label>
+                    <button class="remove-btn" style="display:${deleteBtnDisplay};" onclick="removeApp('${app.id}')" title="حذف">×</button>
+                </div>`;
+            container.appendChild(div);
+        });
+    }
+
+    function updateAppLimit(appId, val) {
+        let app = userApps.find(a => a.id === appId);
+        if(app) app.currentLimit = val === "" ? 0 : parseFloat(val);
+    }
+
+    function toggleApp(appId, isChecked) {
+        let app = userApps.find(a => a.id === appId);
+        if(app) app.isActive = isChecked;
+    }
+
+    function startGeneralAIAnalysis() {
+        let subDateVal = document.getElementById('subDate').value;
+        let total = parseFloat(document.getElementById('totalGB').value);
+        let used = parseFloat(document.getElementById('usedGB').value);
+        let days = parseInt(document.getElementById('remDays').value);
+
+        if(!subDateVal || isNaN(total) || isNaN(used) || isNaN(days) || total <= 0 || days <= 0) {
+            alert("يرجى إدخال البيانات الـ 5 الأساسية بشكل صحيح (بما فيها تاريخ بداية الاشتراك).");
+            return;
+        }
+
+        document.getElementById('generalReportBox').style.display = 'none';
+        document.getElementById('generalProcessingBox').style.display = 'block';
+
+        let timeLeft = 5;
+        const countdownEl = document.getElementById('generalCountdown');
+        const statusEl = document.getElementById('generalAiStatus');
+        const steps = ["جاري قراءة بيانات الباقة الأساسية...","حساب معدلات السحب الفعلي...","مطابقة الاستهلاك مع الأيام المتبقية...","إعداد التقرير العام للذكاء الاصطناعي..."];
+
+        let timerInterval = setInterval(() => {
+            timeLeft--;
+            countdownEl.innerText = timeLeft;
+            if(timeLeft >= 0 && timeLeft < 4) statusEl.innerText = steps[3 - timeLeft];
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('generalProcessingBox').style.display = 'none';
+                generateGeneralReport(total, used, days, subDateVal);
+            }
+        }, 1000);
+    }
+
+    function generateGeneralReport(total, used, daysLeft, subDateVal) {
+        let rem = total - used;
+        if(rem < 0) rem = 0;
+        let daysPassed = calculateDaysPassed(subDateVal);
+        if(daysPassed === null) daysPassed = 1;
+
+        let actualDailyUsage = used / daysPassed;
+        let allowedDailyUsage = rem / daysLeft;
+
+        const reportBox = document.getElementById('generalReportBox');
+        const titleEl = document.getElementById('generalReportTitle');
+        const adviceEl = document.getElementById('generalAiAdviceText');
+
+        document.getElementById('actualDaily').innerText = actualDailyUsage.toFixed(2) + " جيجا/يوم";
+        document.getElementById('allowedDaily').innerText = allowedDailyUsage.toFixed(2) + " جيجا/يوم";
+
+        let advice = "";
+        if(used === 0) {
+            reportBox.className = "report-box status-safe";
+            titleEl.innerText = "🟢 حالة الباقة العامة: ممتازة";
+            advice = "الباقة جديدة. حافظ على استهلاك يومي بحد أقصى (" + allowedDailyUsage.toFixed(1) + ") جيجا لضمان استمرارها حتى موعد التجديد.";
+        } else if (actualDailyUsage <= allowedDailyUsage) {
+            reportBox.className = "report-box status-safe";
+            titleEl.innerText = "🟢 حالة الباقة العامة: استهلاك طبيعي وآمن";
+            advice = "معدل استهلاكك العام ممتاز ومثالي. الباقة ستكفي الأيام المتبقية بالكامل.";
+        } else if (actualDailyUsage <= allowedDailyUsage * 1.5) {
+            reportBox.className = "report-box status-warning";
+            titleEl.innerText = "🟡 حالة الباقة العامة: استهلاك زائد (تنبيه)";
+            advice = "تنبيه: معدل السحب العام أعلى من الطبيعي. يفضل ترشيد استهلاك البيانات في الأيام القادمة.";
+        } else {
+            reportBox.className = "report-box status-danger";
+            titleEl.innerText = "🔴 حالة الباقة العامة: استهلاك حرج (خطر نفاذ)";
+            advice = "تحذير طوارئ: معدل الاستهلاك الفعلي سيفنفد الباقة قبل موعدها. يرجى مراجعة التطبيقات أدناه لتقليل السحب فوراً.";
+        }
+
+        adviceEl.innerHTML = advice;
+        reportBox.style.display = 'block';
+    }
+
+    function startAppsAIAnalysis() {
+        let total = parseFloat(document.getElementById('totalGB').value);
+        let used = parseFloat(document.getElementById('usedGB').value);
+        let days = parseInt(document.getElementById('remDays').value);
+
+        if(isNaN(total) || isNaN(used) || isNaN(days) || total <= 0 || days <= 0) {
+            alert("يرجى ملء البيانات الـ 5 الأساسية للباقة أولاً ليتمكن الـ AI من توزيع الحصص بدقة.");
+            return;
+        }
+
+        document.getElementById('appsReportBox').style.display = 'none';
+        document.getElementById('appsProcessingBox').style.display = 'block';
+
+        let timeLeft = 5;
+        const countdownEl = document.getElementById('appsCountdown');
+        const statusEl = document.getElementById('appsAiStatus');
+        const steps = ["تحليل أولويات التطبيقات المفعلة...","حساب السعة المتبقية الفعلية...","توزيع الحصص اليومية على التطبيقات...","صياغة خطة توزيع الاستهلاك..."];
+
+        let timerInterval = setInterval(() => {
+            timeLeft--;
+            countdownEl.innerText = timeLeft;
+            if(timeLeft >= 0 && timeLeft < 4) statusEl.innerText = steps[3 - timeLeft];
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('appsProcessingBox').style.display = 'none';
+                generateAppsReport(total, used, days);
+            }
+        }, 1000);
+    }
+
+    function generateAppsReport(total, used, daysLeft) {
+        let rem = total - used;
+        if(rem < 0) rem = 0;
+        let activeApps = userApps.filter(a => a.isActive);
+        let totalActiveLimit = activeApps.reduce((sum, app) => sum + (parseFloat(app.currentLimit) || 0), 0);
+
+        const reportBox = document.getElementById('appsReportBox');
+        const adviceEl = document.getElementById('appsAiAdviceText');
+
+        let advice = `<b>💡 تحليل وتوزيع الذكاء الاصطناعي للأولويات:</b><br>`;
+        advice += `إجمالي المتبقي في الباقة: <b>${rem} جيجا</b> موزعة على <b>${daysLeft} يوم</b> متبقي.<br><br>`;
+
+        if(activeApps.length === 0) {
+            advice += `⚠️ لم تقم بتفعيل أي تطبيق لتوزيع الحصص عليه. يرجى تفعيل تطبيقات من القائمة أعلى ليعطيك خطة التوزيع.`;
+        } else {
+            advice += `تم تحليل استهلاك التطبيقات ${activeApps.length} المفعلة، وبناءً عليه يقترح الـ AI الخطة التالية لكي تنتهي الباقة في موعدها:<br><br>`;
+            activeApps.forEach(app => {
+                advice += `• <b>${app.emoji} ${app.name}:</b> الاستهلاك المقدر (${(app.currentLimit/1024).toFixed(2)} جيجا). تم وزن الحصة لتناسب الـ (${daysLeft}) يوم المتبقية.<br>`;
+            });
+            if(totalActiveLimit > (rem * 1024)) {
+                advice += `<br><span style="color:#ff8787"><b>🚨 تنبيه خطير:</b> مجموع استهلاك التطبيقات المفعلة أكبر من إجمالي المتبقي في باقتك! يجب خفض سقف تطبيقات مثل الفيديو والألعاب فوراً.</span>`;
+            } else {
+                advice += `<br><span style="color:#b2f2bb"><b>✅ خطة ناجحة:</b> استهلاك تطبيقاتك الحالي ضمن الحدود الآمنة للرصيد المتبقي. استمر بنفس الأولويات!</span>`;
+            }
+        }
+
+        adviceEl.innerHTML = advice;
+        reportBox.style.display = 'block';
+    }
+
+    renderActiveApps();
+</script>
+
+</body>
+</html>
