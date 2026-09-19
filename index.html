@@ -61,6 +61,12 @@
         .btn-ai:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(92, 42, 130, 0.4); }
         .btn-ai-apps { background: linear-gradient(135deg, #2b8a3e 0%, #40c057 100%); margin-top: 12px; }
         .btn-ai-apps:hover { box-shadow: 0 5px 15px rgba(43, 138, 62, 0.4); }
+        
+        .btn-whatsapp { background: linear-gradient(135deg, #128c7e 0%, #25d366 100%); margin-top: 8px; }
+        .btn-whatsapp:hover { box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4); }
+        
+        .btn-print { background: transparent; border: 1px dashed var(--muted); color: var(--muted); margin-top: 8px; font-size: 13px;}
+        .btn-print:hover { border-color: #fff; color: #fff; }
 
         .processing-box {
             display: none; text-align: center; padding: 20px 10px;
@@ -89,6 +95,19 @@
 
         .ai-advice { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 12.5px; line-height: 1.5; border-right: 3px solid var(--accent); }
 
+        /* صندوق النصيحة الثابت */
+        .static-advice-card {
+            background-color: #14151a;
+            border: 1px solid var(--border);
+            border-right: 3px solid #f59f00;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #d7d8dc;
+        }
+
         /* Chart CSS */
         .chart-container { display: flex; justify-content: center; align-items: center; margin: 15px 0; position: relative; }
         .circular-chart { display: block; margin: 0 auto; max-width: 120px; max-height: 120px; }
@@ -99,7 +118,7 @@
         .chart-lbl { font-size: 11px; fill: var(--muted); margin:0;}
 
         .section-header h3 { margin: 0 0 4px 0; font-size: 15px; color: #fff; }
-        .section-header p { margin: 0 0 12px 0; font-size: 11.5px; color: #8e919b; }
+        .section-header p { margin: 0 0 10px 0; font-size: 11.5px; color: #8e919b; }
 
         .active-app-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--border); animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
@@ -191,8 +210,8 @@
 
         <div class="processing-box" id="generalProcessingBox">
             <div class="spinner"></div>
-            <div class="timer-text">جاري التحليل العام: <span id="generalCountdown">5</span> ثواني</div>
-            <div class="ai-status" id="generalAiStatus">فحص السعة والأيام المتبقية...</div>
+            <div class="timer-text">جاري التحليل العام: <span id="generalCountdown">4</span> ثواني</div>
+            <div class="ai-status" id="generalAiStatus">فحص الرصيد والأيام المتبقية...</div>
         </div>
 
         <div class="report-box" id="generalReportBox">
@@ -201,7 +220,6 @@
                 <span class="user-title" id="aiUserTitle"></span>
             </div>
 
-            <!-- الرسم البياني الدائري (Pure SVG) -->
             <div class="chart-container">
                 <svg viewBox="0 0 36 36" class="circular-chart">
                     <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -216,23 +234,33 @@
             <div class="report-row"><span style="color:var(--muted)">الاستهلاك اليومي الفعلي:</span><strong id="actualDaily">0 جيجا/يوم</strong></div>
             <div class="report-row"><span style="color:var(--muted)">الاستهلاك اليومي المسموح:</span><strong id="allowedDaily">0 جيجا/يوم</strong></div>
             <div class="report-row"><span style="color:var(--muted)">نصيب الجهاز الواحد يومياً:</span><strong id="perDeviceDaily">0 جيجا/يوم</strong></div>
-            <div class="report-row"><span style="color:var(--muted)">توقع نفاد الباقة خلال:</span><strong id="daysUntilEmpty">-</strong></div>
+            <div class="report-row"><span style="color:var(--muted)">الوقت المتوقع لنفاد الباقة:</span><strong id="daysUntilEmpty">-</strong></div>
             <div class="ai-advice" id="generalAiAdviceText"></div>
+            
+            <button class="btn-ai btn-whatsapp" onclick="shareToWhatsApp()">📤 مشاركة تحذير العائلة (WhatsApp)</button>
+            <button class="btn-ai btn-print" onclick="window.print()">🖨️ طباعة أو حفظ التقرير (PDF)</button>
         </div>
     </div>
 
+    <!-- قسم التطبيقات مع إضافة صندوق النصيحة الثابت -->
     <div class="box-panel">
         <div class="section-header">
             <h3>استخدام التطبيقات حسب أولوياتك</h3>
             <p>حدد استخدامك بالجيجا لكل تطبيق (مثال: 1 جيجا، 0.5 جيجا...).</p>
         </div>
+
+        <!-- صندوق النصيحة الثابت -->
+        <div class="static-advice-card">
+            ⚠️ <b>نصيحة:</b> الإفراط في استخدام تطبيقات الفيديو والألعاب بيستهلك باقتك بسرعة كبيرة، وبيقلل وقتك المفيد وتركيزك في المذاكرة، وممكن يأثر على نومك لو الاستخدام بالليل. حاول توازن استخدامك اليومي وخصص وقت محدد لكل تطبيق.
+        </div>
+
         <div id="activeAppsContainer"></div>
         <button class="btn-add-global" id="btnAddGlobalApp" onclick="openModal()">+ إضافة تطبيق أو لعبة من القائمة (20+)</button>
         <button class="btn-ai btn-ai-apps" onclick="startAppsAIAnalysis()"><span>🧠 التحليل الذكي المتقدم للتطبيقات</span></button>
 
         <div class="processing-box" id="appsProcessingBox">
             <div class="spinner"></div>
-            <div class="timer-text">تحليل أولويات التطبيقات: <span id="appsCountdown">5</span> ثواني</div>
+            <div class="timer-text">تحليل أولويات التطبيقات: <span id="appsCountdown">4</span> ثواني</div>
             <div class="ai-status" id="appsAiStatus">جاري توزيع الاستهلاك بحسب الأيام...</div>
         </div>
 
@@ -291,9 +319,7 @@
     const ENCODED_USER = "QFlvdXNzZWYuSGVsYWw=";
     const ENCODED_PASS = "WTFZMlkzWTR5NXk2eTc=";
     let isAdminLoggedIn = false;
-    let failedAttempts = 0; let lockUntil = 0;
     
-    // --- Voice AI System ---
     let voiceEnabled = true;
     function toggleVoice() {
         voiceEnabled = !voiceEnabled;
@@ -303,15 +329,33 @@
     
     function speakAI(text) {
         if(!voiceEnabled || !('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel(); // وقف أي كلام قديم
-        // تنظيف النص من أكواد الـ HTML عشان الذكاء ينطقه ككلام بس
+        window.speechSynthesis.cancel();
         let cleanText = text.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ');
         let msg = new SpeechSynthesisUtterance(cleanText);
-        msg.lang = 'ar-SA'; // اللهجة العربية
-        msg.rate = 1.0;     // سرعة طبيعية
-        window.speechSynthesis.speak(msg);
+        msg.lang = 'ar-SA'; msg.rate = 1.0; window.speechSynthesis.speak(msg);
     }
-    // ----------------------
+
+    function shareToWhatsApp() {
+        let total = document.getElementById('totalGB').value || "0";
+        let used = document.getElementById('usedGB').value || "0";
+        let rem = document.getElementById('remGB').value || "0";
+        let title = document.getElementById('generalReportTitle').innerText;
+        let badge = document.getElementById('aiUserTitle').innerText;
+        let adviceNode = document.getElementById('generalAiAdviceText');
+        let advice = adviceNode ? adviceNode.innerText : "";
+        let daysEmpty = document.getElementById('daysUntilEmpty').innerText;
+
+        let text = `🌐 *تقرير WE Smart Analyzer* 🌐\n\n` +
+                   `👤 لقب الاستهلاك: *${badge}*\n` +
+                   `📊 الحالة: *${title}*\n` +
+                   `📉 المستخدم: ${used} جيجا من ${total} جيجا\n` +
+                   `⏳ المتبقي: ${rem} جيجا (ينفد خلال ${daysEmpty})\n` +
+                   `💡 نصيحة الـ AI: "${advice}"\n\n` +
+                   `⚠️ يا جماعة ركزوا شوية وخفوا استهلاك عشان الباقة تكفي لآخر الشهر! 😂🚀`;
+
+        let encodedText = encodeURIComponent(text);
+        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
+    }
 
     let availableApps = [
         { id: 'tiktok', name: 'TikTok', emoji: '🎵', defaultLimit: 0.6 },
@@ -384,7 +428,7 @@
         const subDate = new Date(subDateStr + 'T00:00:00');
         const today = new Date(); today.setHours(0,0,0,0);
         let diffDays = Math.round((today - subDate) / (1000 * 60 * 60 * 24));
-        return isNaN(diffDays) || diffDays < 1 ? 1 : diffDays;
+        return (isNaN(diffDays) || diffDays <= 0) ? 1 : diffDays;
     }
 
     function requestDeveloperAccess() {
@@ -446,12 +490,35 @@
     function toggleApp(appId, isChecked) { let app = userApps.find(a => a.id === appId); if(app) app.isActive = isChecked; saveData(); }
 
     const AI_TONE_BANK = {
-        excellent: ["الاستهلاك ممتاز جداً. استمر على نفس النظام."],
-        safe: ["معدلك طبيعي وآمن. الباقة هتكفي لآخر الشهر براحتك."],
-        warning: ["تنبيه! استهلاكك بدأ يزيد عن المعدل الطبيعي."],
-        danger: ["تحذير! معدل استهلاكك الحالي خطير جداً والباقة هتخلص قبل ميعادها."]
+        excellent: [
+            "الاستهلاك ممتاز جداً! الرصيد المتبقي بحري وهيكفي لنهاية الشهر وتزود كمان براحتك.",
+            "أنت كده حكيم النت بجد! السحب هادئ والوضع في السيف زون تماماً ومفيش أي خطورة.",
+            "الله ينور، باقتك محمية وفي المضمون، كمل بنفس السرعة دي ومش هتحس بأي نقص نهائي.",
+            "استهلاكك رايق ومش محتاج أي تقشف، الباقة قاعدة تتفرج عليك وهي مطمنة وسعيدة."
+        ],
+        safe: [
+            "وضع الباقة آمن ومستقر. الاستهلاك ماشي مع الأيام المتبقية بمنتهى التوازن والعقل.",
+            "معدل طبيعي ومقبول جداً، مفيش أي قلق خالص، كمل سحبك بانتظام وهتكفي للآخر.",
+            "الوضع في التمام، السحب اليومي عادي ومحسوب، الباقة مكملة معاك للآخر وتمام التمام.",
+            "أنت ماشي على خطة مظبوطة ومحترمة، لا إسراف ولا تقشف مبالغ فيه."
+        ],
+        warning: [
+            "تنبيه بسيط: معدل السحب زاد شوية عن المعتاد، حاول توازن استخدامك في الأيام اللي جايين.",
+            "خد بالك! الباقة بتسحب أسرع شوية من الطبيعي، خف فيديوهات عالية الجودة وفيديوهات الريلز شوية.",
+            "إشارات تحذير خفيفة.. لو كملت بنفس السرعة دي ممكن الباقة تخلص قبل ميعاد التجديد بيومين تلاتة.",
+            "بدأنا ندخل في المنطقة اللي محتاجة حرص وتدقيق، ظبط استهلاكك عشان م تتفاجئش في الآخر."
+        ],
+        danger: [
+            "تحذير خطير! الباقة بتنزف بسرعة رهيبة ومعدل السحب غير مسيطر عليه خالص!",
+            "كارثة في الطريق! لو فضلت ساحب بالمعدل ده الباقة هتطير في أول أسبوع، الحق نفسك وفصل التحميلات الكبيرة!",
+            "استهلاك حرج جداً! الـ AI بينبهك إنك بتدمر الباقة، قلل اليوتيوب والتيك توك وفيديوهات الـ 4كي فورا!",
+            "الوضع خطير يا باشمهندس! سحبك عالي جداً مقارنة بالمتبقي، لازم ترشيد فوري للاستهلاك حالا!"
+        ]
     };
-    function pickTone(cat) { return AI_TONE_BANK[cat][Math.floor(Math.random() * AI_TONE_BANK[cat].length)]; }
+    function pickTone(cat) { 
+        const arr = AI_TONE_BANK[cat];
+        return arr[Math.floor(Math.random() * arr.length)]; 
+    }
 
     function startGeneralAIAnalysis() {
         let total = parseFloat(document.getElementById('totalGB').value);
@@ -462,9 +529,9 @@
         document.getElementById('generalReportBox').style.display = 'none';
         document.getElementById('generalProcessingBox').style.display = 'block';
 
-        if(voiceEnabled) speakAI("جاري تحليل بيانات الاستهلاك العام.");
+        if(voiceEnabled) speakAI("جاري تحليل بيانات الاستهلاك بالخوارزمية الذكية المطورة.");
 
-        let tl = 5;
+        let tl = 4;
         let iv = setInterval(() => {
             tl--; document.getElementById('generalCountdown').innerText = tl;
             if(tl <= 0) { clearInterval(iv); document.getElementById('generalProcessingBox').style.display = 'none'; generateGeneralReport(); }
@@ -472,9 +539,9 @@
     }
 
     function generateGeneralReport() {
-        let total = parseFloat(document.getElementById('totalGB').value);
-        let used = parseFloat(document.getElementById('usedGB').value);
-        let daysLeft = parseInt(document.getElementById('remDays').value);
+        let total = parseFloat(document.getElementById('totalGB').value) || 0;
+        let used = parseFloat(document.getElementById('usedGB').value) || 0;
+        let daysLeft = parseInt(document.getElementById('remDays').value) || 1;
         let subDateVal = document.getElementById('subDate').value;
         let devices = parseInt(document.getElementById('deviceCount').value) || 1;
 
@@ -483,23 +550,40 @@
         let actualDaily = used / daysPassed;
         let allowedDaily = rem / daysLeft;
         let perc = Math.min((used / total) * 100, 100).toFixed(0);
-        let daysUntilEmpty = actualDaily > 0 ? (rem / actualDaily) : Infinity;
+        
+        let daysUntilEmpty = actualDaily > 0 ? (rem / actualDaily) : (daysLeft * 2);
 
         const box = document.getElementById('generalReportBox');
         document.getElementById('actualDaily').innerText = actualDaily.toFixed(2) + " جيجا/يوم";
         document.getElementById('allowedDaily').innerText = allowedDaily.toFixed(2) + " جيجا/يوم";
         document.getElementById('perDeviceDaily').innerText = (allowedDaily / devices).toFixed(2) + " جيجا/يوم (" + devices + " جهاز)";
-        document.getElementById('daysUntilEmpty').innerText = isFinite(daysUntilEmpty) ? Math.floor(daysUntilEmpty) + " يوم" : "لم يتم الاستهلاك";
+        
+        if (rem === 0) {
+            document.getElementById('daysUntilEmpty').innerText = "انتهت الباقة بالكامل!";
+        } else {
+            document.getElementById('daysUntilEmpty').innerText = Math.ceil(daysUntilEmpty) + " يوم تقريباً";
+        }
 
         let circle = document.getElementById('chartCircle');
         document.getElementById('chartPercText').innerText = perc + "%";
         setTimeout(() => { circle.style.strokeDasharray = `${perc}, 100`; }, 100);
 
         let cat = "safe", title = "", userBadge = "";
-        if(used === 0) { box.className = "report-box status-safe"; title = "حالة الباقة ممتازة"; cat = "excellent"; circle.style.stroke = "var(--safe)"; userBadge = "حكيم النت"; }
-        else if (actualDaily <= allowedDaily) { box.className = "report-box status-safe"; title = "استهلاك طبيعي وآمن"; cat = "safe"; circle.style.stroke = "var(--safe)"; userBadge = "الموفر الذكي"; }
-        else if (actualDaily <= allowedDaily * 1.5) { box.className = "report-box status-warning"; title = "استهلاك زائد"; cat = "warning"; circle.style.stroke = "var(--warn)"; userBadge = "مدمن خفيف"; }
-        else { box.className = "report-box status-danger"; title = "استهلاك حرج"; cat = "danger"; circle.style.stroke = "var(--danger)"; userBadge = "مدمر الباقة"; }
+        let remainingRatio = rem / total;
+
+        if (rem === 0) {
+            box.className = "report-box status-danger"; title = "الباقة خلصت!"; cat = "danger"; circle.style.stroke = "var(--danger)"; userBadge = "مفلس نت";
+        } else if (used === 0) {
+            box.className = "report-box status-safe"; title = "الباقة جديدة وممتازة"; cat = "excellent"; circle.style.stroke = "var(--safe)"; userBadge = "حكيم النت";
+        } else if (remainingRatio >= 0.75) {
+            box.className = "report-box status-safe"; title = "استهلاك آمن جداً ومريح"; cat = "excellent"; circle.style.stroke = "var(--safe)"; userBadge = "الموفر الذكي";
+        } else if (daysUntilEmpty >= daysLeft) {
+            box.className = "report-box status-safe"; title = "طبيعي ومقبول"; cat = "safe"; circle.style.stroke = "var(--safe)"; userBadge = "مستخدم متوازن";
+        } else if (daysUntilEmpty >= (daysLeft * 0.5)) {
+            box.className = "report-box status-warning"; title = "استهلاك زائد"; cat = "warning"; circle.style.stroke = "var(--warn)"; userBadge = "مدمن خفيف";
+        } else {
+            box.className = "report-box status-danger"; title = "استهلاك حرج جداً"; cat = "danger"; circle.style.stroke = "var(--danger)"; userBadge = "مدمر الباقة";
+        }
 
         document.getElementById('generalReportTitle').innerText = title;
         document.getElementById('aiUserTitle').innerText = userBadge;
@@ -508,7 +592,6 @@
         document.getElementById('generalAiAdviceText').innerHTML = `<i>${toneMsg}</i>`;
         box.style.display = 'block';
 
-        // الـ AI بينطق التقرير هنا
         let speechText = `التقرير العام. ${title}. ${toneMsg}`;
         speakAI(speechText);
     }
@@ -525,8 +608,8 @@
     }
 
     function generateAppsReport() {
-        let total = parseFloat(document.getElementById('totalGB').value);
-        let used = parseFloat(document.getElementById('usedGB').value);
+        let total = parseFloat(document.getElementById('totalGB').value) || 0;
+        let used = parseFloat(document.getElementById('usedGB').value) || 0;
         let rem = Math.max(total - used, 0);
         let activeApps = userApps.filter(a => a.isActive);
         let totalActiveLimit = activeApps.reduce((sum, app) => sum + (parseFloat(app.currentLimit) || 0), 0);
@@ -541,12 +624,21 @@
             [...activeApps].sort((a, b) => b.currentLimit - a.currentLimit).forEach(app => {
                 advice += `• <b>${app.emoji} ${app.name}:</b> ${app.currentLimit.toFixed(2)} جيجا/يوم<br>`;
             });
+            
             if(totalActiveLimit > rem) {
-                advice += `<br><span style="color:#ff8787">🚨 تنبيه: استهلاك التطبيقات اليومي أكبر من الرصيد المتبقي!</span>`;
-                speechAdvice = "تحذير خطير. مجموع استهلاك التطبيقات اللي حددتها أكبر من الرصيد المتبقي في باقتك. يرجى التقليل فوراً.";
+                advice += `<br><div style="background:rgba(201,42,42,0.15); border:1px solid var(--danger); padding:10px; border-radius:8px; margin-top:10px; color:#ffc9c9;">` +
+                          `🚨 <b>سلبيات الاستهلاك المفرط للتطبيقات:</b><br>` +
+                          `مجموع استهلاك التطبيقات اليومي (${totalActiveLimit.toFixed(1)} جيجا) يتجاوز الرصيد المتبقي بالكامل (${rem.toFixed(1)} جيجا)! هذا سيؤدي إلى نفاذ الباقة بسرعة قياسية ودخول مرحلة السرعة البطشية أو انقطاع الإنترنت.</div>`;
+                speechAdvice = "تحذير خطير. الاستهلاك المفرط للتطبيقات سيؤدي إلى نفاذ الباقة بسرعة قياسية.";
+            } else if(totalActiveLimit > (rem / 3)) {
+                advice += `<br><div style="background:rgba(230,119,0,0.15); border:1px solid var(--warn); padding:10px; border-radius:8px; margin-top:10px; color:#ffe066;">` +
+                          `⚠️ <b>تنبيه الضغط العالي:</b><br>` +
+                          `معدل استهلاك التطبيقات مرتفع وقد يتسبب في استنزاف الباقة قبل ميعاد التجديد، يفضل الترشيد.</div>`;
+                speechAdvice = "تنبيه. معدل استهلاك التطبيقات مرتفع وقد يستنزف الباقة.";
             } else {
-                advice += `<br><span style="color:#b2f2bb">✅ خطة ناجحة: استهلاك ضمن المسموح.</span>`;
-                speechAdvice = "خطة التوزيع ناجحة، واستهلاكك للتطبيقات ضمن الحدود الآمنة.";
+                advice += `<br><div style="background:rgba(43,138,62,0.15); border:1px solid var(--safe); padding:10px; border-radius:8px; margin-top:10px; color:#b2f2bb;">` +
+                          `✅ <b>خطة متوازنة:</b> استهلاك التطبيقات آمن ولا يمثل خطراً على الباقة.</div>`;
+                speechAdvice = "خطة متوازنة. استهلاك التطبيقات آمن ولا يمثل خطراً على الباقة.";
             }
         }
         
