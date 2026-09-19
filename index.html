@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0f1115">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    
     <title>مدير استهلاك باقة WE - المحلل الذكي</title>
     <style>
         * { box-sizing: border-box; -webkit-user-select: none; user-select: none; }
         :root {
             --bg: #0f1115; --panel: #1a1d24; --border: #2d3139; --text: #e4e5e7;
             --muted: #a0a5b1; --accent: #8b40c6; --accent2: #5c2a82;
+            --safe: #2b8a3e; --warn: #e67700; --danger: #c92a2a;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Arial, sans-serif;
@@ -22,10 +29,18 @@
             padding: 20px; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
             position: relative;
         }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
         .we-logo {
-            text-align: center; color: var(--accent2); font-size: 22px; font-weight: bold; margin-bottom: 15px;
+            color: var(--accent2); font-size: 20px; font-weight: bold; 
             text-shadow: 0 0 10px rgba(92, 42, 130, 0.5); user-select: none;
         }
+        
+        .voice-btn {
+            background: rgba(139, 64, 198, 0.1); border: 1px solid var(--accent); color: #fff;
+            padding: 5px 10px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.3s;
+        }
+        .voice-btn:hover { background: var(--accent); }
 
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; margin-bottom: 4px; color: var(--muted); font-size: 12.5px; font-weight: bold; }
@@ -61,24 +76,33 @@
         .timer-text { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 6px;}
         .ai-status { font-size: 12px; color: var(--muted); }
 
-        .report-box { display: none; margin-top: 15px; padding: 15px; border-radius: 10px; animation: slideUp 0.5s ease; }
+        .report-box { display: none; margin-top: 15px; padding: 15px; border-radius: 10px; animation: slideUp 0.5s ease; position: relative;}
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        .report-header { font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;}
+        .report-header { font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; display:flex; justify-content:space-between; align-items:center;}
+        .user-title { font-size: 12px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 20px; color: #fff;}
         .report-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom:4px;}
 
-        .status-safe { background-color: rgba(43, 138, 62, 0.1); border: 1px solid #2b8a3e; color: #b2f2bb; }
-        .status-warning { background-color: rgba(230, 119, 0, 0.1); border: 1px solid #e67700; color: #ffe066; }
-        .status-danger { background-color: rgba(201, 42, 42, 0.1); border: 1px solid #c92a2a; color: #ffc9c9; }
+        .status-safe { background-color: rgba(43, 138, 62, 0.1); border: 1px solid var(--safe); color: #b2f2bb; }
+        .status-warning { background-color: rgba(230, 119, 0, 0.1); border: 1px solid var(--warn); color: #ffe066; }
+        .status-danger { background-color: rgba(201, 42, 42, 0.1); border: 1px solid var(--danger); color: #ffc9c9; }
 
         .ai-advice { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 12.5px; line-height: 1.5; border-right: 3px solid var(--accent); }
+
+        /* Chart CSS */
+        .chart-container { display: flex; justify-content: center; align-items: center; margin: 15px 0; position: relative; }
+        .circular-chart { display: block; margin: 0 auto; max-width: 120px; max-height: 120px; }
+        .circle-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 3.8; }
+        .circle { fill: none; stroke-width: 3.8; stroke-linecap: round; transition: stroke-dasharray 1s ease-out, stroke 0.5s; }
+        .chart-text-wrapper { position: absolute; text-align: center; }
+        .chart-perc { font-size: 22px; font-weight: bold; fill: #fff; line-height: 1; margin:0;}
+        .chart-lbl { font-size: 11px; fill: var(--muted); margin:0;}
 
         .section-header h3 { margin: 0 0 4px 0; font-size: 15px; color: #fff; }
         .section-header p { margin: 0 0 12px 0; font-size: 11.5px; color: #8e919b; }
 
         .active-app-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--border); animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
         .app-title-group { display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden; }
         .app-emoji { font-size: 16px; flex-shrink: 0; }
         .app-name-text { color: #fff; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -86,17 +110,10 @@
         .remove-btn { background: none; border: none; color: #5c5f66; cursor: pointer; font-size: 16px; padding: 0 4px; transition: 0.2s; display: none; }
         .remove-btn:hover { color: #fa5252; }
 
-        .btn-add-global {
-            background-color: transparent; border: 1px dashed var(--accent); color: #b197fc;
-            padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer;
-            width: 100%; margin-top: 12px; transition: 0.2s; text-align: center; display: none;
-        }
+        .btn-add-global { background-color: transparent; border: 1px dashed var(--accent); color: #b197fc; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 12px; transition: 0.2s; text-align: center; display: none; }
         .btn-add-global:hover { background-color: rgba(139, 64, 198, 0.1); }
 
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background-color: var(--panel); width: 92%; max-width: 400px; border-radius: 12px; border: 1px solid var(--border); max-height: 80vh; display: flex; flex-direction: column; }
         .modal-header { padding: 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .close-modal { background: none; border: none; color: #8e919b; font-size: 22px; cursor: pointer; line-height: 1; }
@@ -114,25 +131,13 @@
 
         .custom-app-form { background-color: #14151a; border: 1px solid var(--border); padding: 10px; border-radius: 8px; margin-top: 12px; display: none; }
         .custom-app-form h4 { margin: 0 0 8px 0; font-size: 12.5px; color: #b197fc; }
-
-        .admin-login-btn { position: absolute; top: 10px; left: 12px; background: none; border: none; color: #8e919b; font-size: 11.5px; cursor: pointer; padding: 4px; z-index: 10; font-weight: bold; }
+        .admin-login-btn { position: absolute; top: -15px; left: 0px; background: none; border: none; color: #8e919b; font-size: 11.5px; cursor: pointer; padding: 4px; z-index: 10; font-weight: bold; }
         .admin-login-btn:hover { color: #b197fc; }
-
         .admin-panel { background-color: rgba(250, 82, 82, 0.05); border: 1px dashed #fa5252; display: none; margin-bottom: 15px; }
         .btn-danger { background-color: #fa5252; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12.5px; font-weight:bold; width: 100%; margin-top: 4px;}
 
-        .developer-footer {
-            background-color: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-            padding: 15px; text-align: center; margin-top: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; gap: 8px;
-        }
-        .dev-badge {
-            width: 45px; height: 45px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%);
-            color: #fff; display: flex; justify-content: center; align-items: center;
-            font-size: 15px; font-weight: bold; border: 2px solid #b197fc;
-            box-shadow: 0 0 10px rgba(139, 64, 198, 0.5); letter-spacing: 1px;
-        }
+        .developer-footer { background-color: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .dev-badge { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%); color: #fff; display: flex; justify-content: center; align-items: center; font-size: 15px; font-weight: bold; border: 2px solid #b197fc; box-shadow: 0 0 10px rgba(139, 64, 198, 0.5); letter-spacing: 1px; }
         .developer-footer p { margin: 0; font-size: 12.5px; color: var(--muted); }
         .developer-footer span { color: #b197fc; font-weight: bold; }
     </style>
@@ -141,18 +146,21 @@
 
 <div class="container">
     <div class="box-panel admin-panel" id="adminPanel">
-        <h3 style="color: #fa5252; margin-top:0; font-size:14px;">🔒 لوحة تحكم المطور المتقدمة</h3>
-        <p style="font-size: 11.5px; color: var(--muted); margin-bottom: 8px;">منطقة التحكم السرية:</p>
+        <h3 style="color: #fa5252; margin-top:0; font-size:14px;">🔒 لوحة تحكم المطور</h3>
         <input type="text" id="newDbAppName" class="input-dark" placeholder="اسم التطبيق الجديد" style="margin-bottom:6px; font-size:13px; padding:8px;">
         <input type="text" id="newDbAppEmoji" class="input-dark" placeholder="الإيموجي (مثال: 🌐)" maxlength="2" style="margin-bottom:6px; font-size:13px; padding:8px;">
         <input type="number" id="newDbAppLimit" class="input-dark" placeholder="الاستهلاك الافتراضي (ميجا)" min="0" style="margin-bottom:6px; font-size:13px; padding:8px;">
-        <button class="btn-danger" onclick="addAppToDatabase()">إضافة التطبيق لقاعدة البيانات</button>
-        <button class="btn-danger" style="background-color:#5c5f66; margin-top:6px;" onclick="logoutAdmin()">إغلاق وقفل اللوحة</button>
+        <button class="btn-danger" onclick="addAppToDatabase()">إضافة التطبيق</button>
+        <button class="btn-danger" style="background-color:#5c5f66; margin-top:6px;" onclick="logoutAdmin()">إغلاق اللوحة</button>
     </div>
 
     <div class="box-panel">
-        <button class="admin-login-btn" id="adminBtn" onclick="requestDeveloperAccess()">⚙️ Admin</button>
-        <div class="we-logo">🌐 WE Smart Analyzer</div>
+        <button class="admin-login-btn" onclick="requestDeveloperAccess()">⚙️ Admin</button>
+        
+        <div class="header-top">
+            <div class="we-logo">🌐 WE Smart Analyzer</div>
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🔊 قراءة AI: مفعّل</button>
+        </div>
 
         <div class="input-group">
             <label>1. بداية الاشتراك</label>
@@ -174,6 +182,10 @@
             <label>5. الأيام المتبقية على التجديد</label>
             <input type="number" id="remDays" class="input-dark" placeholder="مثال: 12" min="1">
         </div>
+        <div class="input-group">
+            <label>6. عدد الأجهزة على شبكة الواي فاي</label>
+            <input type="number" id="deviceCount" class="input-dark" placeholder="مثال: 4" min="1" value="1">
+        </div>
 
         <button class="btn-ai" onclick="startGeneralAIAnalysis()"><span>🧠 تحليل الذكاء الاصطناعي (العام)</span></button>
 
@@ -184,9 +196,27 @@
         </div>
 
         <div class="report-box" id="generalReportBox">
-            <div class="report-header" id="generalReportTitle"></div>
+            <div class="report-header">
+                <span id="generalReportTitle"></span>
+                <span class="user-title" id="aiUserTitle"></span>
+            </div>
+
+            <!-- الرسم البياني الدائري (Pure SVG) -->
+            <div class="chart-container">
+                <svg viewBox="0 0 36 36" class="circular-chart">
+                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="circle" id="chartCircle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <div class="chart-text-wrapper">
+                    <p class="chart-perc" id="chartPercText">0%</p>
+                    <p class="chart-lbl">مُستهلك</p>
+                </div>
+            </div>
+
             <div class="report-row"><span style="color:var(--muted)">الاستهلاك اليومي الفعلي:</span><strong id="actualDaily">0 جيجا/يوم</strong></div>
             <div class="report-row"><span style="color:var(--muted)">الاستهلاك اليومي المسموح:</span><strong id="allowedDaily">0 جيجا/يوم</strong></div>
+            <div class="report-row"><span style="color:var(--muted)">نصيب الجهاز الواحد يومياً:</span><strong id="perDeviceDaily">0 جيجا/يوم</strong></div>
+            <div class="report-row"><span style="color:var(--muted)">توقع نفاد الباقة خلال:</span><strong id="daysUntilEmpty">-</strong></div>
             <div class="ai-advice" id="generalAiAdviceText"></div>
         </div>
     </div>
@@ -195,9 +225,6 @@
         <div class="section-header">
             <h3>استخدام التطبيقات حسب أولوياتك</h3>
             <p>حدد استخدامك بالجيجا لكل تطبيق (مثال: 1 جيجا، 0.5 جيجا...).</p>
-        </div>
-        <div class="ai-advice" style="border-right-color:#e67700; margin-bottom:12px;">
-            ⚠️ <b>نصيحة:</b> الإفراط في استخدام تطبيقات الفيديو والألعاب بيستهلك باقتك بسرعة كبيرة، وبيقلل وقتك المفيد وتركيزك في المذاكرة، وممكن يأثر على نومك لو الاستخدام بالليل. حاول توازن استخدامك اليومي وخصص وقت محدد لكل تطبيق.
         </div>
         <div id="activeAppsContainer"></div>
         <button class="btn-add-global" id="btnAddGlobalApp" onclick="openModal()">+ إضافة تطبيق أو لعبة من القائمة (20+)</button>
@@ -230,7 +257,7 @@
         <div class="modal-body">
             <div id="modalAppList"></div>
             <div class="custom-app-form" id="customAppFormContainer">
-                <h4>➕ إضافة تطبيق مخصص جديد (خاص بالمطور)</h4>
+                <h4>➕ إضافة تطبيق مخصص جديد</h4>
                 <input type="text" id="customName" class="input-dark" placeholder="اسم التطبيق (مثال: Zoom)" style="margin-bottom:6px; font-size:13px; padding:8px;">
                 <input type="text" id="customEmoji" class="input-dark" placeholder="الإيموجي (مثال: 💻)" maxlength="2" style="margin-bottom:6px; font-size:13px; padding:8px;">
                 <input type="number" id="customLimit" class="input-dark" placeholder="الاستهلاك المقدر (ميجا)" min="0" style="margin-bottom:6px; font-size:13px; padding:8px;">
@@ -240,29 +267,52 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="adminLoginModal">
+    <div class="modal-content" style="max-width:340px;" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 style="margin:0; font-size:15px; color:#fff;">🔒 دخول المطور</h3>
+            <button class="close-modal" onclick="closeAdminLoginModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="text" id="adminUserField" class="input-dark" placeholder="اليوزر" style="margin-bottom:8px;" autocomplete="off">
+            <input type="password" id="adminPassField" class="input-dark" placeholder="الباسورد" style="margin-bottom:10px;" autocomplete="off">
+            <button class="btn-ai" onclick="submitAdminLogin()">دخول</button>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => {
-        const blocked =
-            e.keyCode == 123 ||
-            (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) ||
-            (e.ctrlKey && e.keyCode == 85) ||
-            (e.metaKey && e.altKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67));
-        if (blocked) { e.preventDefault(); alert("⚠️ هذه المنطقة محمية. مخصصة للمطور فقط!"); return false; }
+        const blocked = e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && e.keyCode == 85);
+        if (blocked) { e.preventDefault(); alert("⚠️ هذه المنطقة محمية!"); return false; }
     });
 
     const ENCODED_USER = "QFlvdXNzZWYuSGVsYWw=";
     const ENCODED_PASS = "WTFZMlkzWTR5NXk2eTc=";
     let isAdminLoggedIn = false;
+    let failedAttempts = 0; let lockUntil = 0;
+    
+    // --- Voice AI System ---
+    let voiceEnabled = true;
+    function toggleVoice() {
+        voiceEnabled = !voiceEnabled;
+        document.getElementById('voiceBtn').innerText = voiceEnabled ? "🔊 قراءة AI: مفعّل" : "🔇 قراءة AI: صامت";
+        if(!voiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+    }
+    
+    function speakAI(text) {
+        if(!voiceEnabled || !('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel(); // وقف أي كلام قديم
+        // تنظيف النص من أكواد الـ HTML عشان الذكاء ينطقه ككلام بس
+        let cleanText = text.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ');
+        let msg = new SpeechSynthesisUtterance(cleanText);
+        msg.lang = 'ar-SA'; // اللهجة العربية
+        msg.rate = 1.0;     // سرعة طبيعية
+        window.speechSynthesis.speak(msg);
+    }
+    // ----------------------
 
-    const MAX_ATTEMPTS = 3;
-    const LOCK_MS = 30000;
-    let failedAttempts = 0;
-    let lockUntil = 0;
-    function isLocked() { return Date.now() < lockUntil; }
-    function remainingLockSeconds() { return Math.ceil((lockUntil - Date.now()) / 1000); }
-
-    // كل الأرقام هنا بالجيجا (GB) عشان تبقى موحدة مع باقي الموقع
     let availableApps = [
         { id: 'tiktok', name: 'TikTok', emoji: '🎵', defaultLimit: 0.6 },
         { id: 'youtube', name: 'YouTube', emoji: '▶️', defaultLimit: 0.8 },
@@ -270,20 +320,7 @@
         { id: 'facebook', name: 'Facebook', emoji: '📘', defaultLimit: 0.3 },
         { id: 'instagram', name: 'Instagram', emoji: '📸', defaultLimit: 0.4 },
         { id: 'netflix', name: 'Netflix', emoji: '🍿', defaultLimit: 0.9 },
-        { id: 'whatsapp', name: 'WhatsApp', emoji: '💬', defaultLimit: 0.15 },
-        { id: 'telegram', name: 'Telegram', emoji: '✈️', defaultLimit: 0.2 },
-        { id: 'roblox', name: 'Roblox', emoji: '🧱', defaultLimit: 0.3 },
-        { id: 'freefire', name: 'Free Fire', emoji: '🔥', defaultLimit: 0.3 },
-        { id: 'pes', name: 'eFootball', emoji: '⚽', defaultLimit: 0.2 },
-        { id: 'snapchat', name: 'Snapchat', emoji: '👻', defaultLimit: 0.3 },
-        { id: 'X', name: 'X (Twitter)', emoji: '🧷', defaultLimit: 0.2 },
-        { id: 'spotify', name: 'Spotify', emoji: '🎧', defaultLimit: 0.2 },
-        { id: 'twitch', name: 'Twitch', emoji: '🎮', defaultLimit: 0.5 },
-        { id: 'zoom', name: 'Zoom / Meetings', emoji: '💼', defaultLimit: 0.4 },
-        { id: 'google_drive', name: 'Google Drive', emoji: '📁', defaultLimit: 0.1 },
-        { id: 'anghami', name: 'Anghami', emoji: '🎶', defaultLimit: 0.2 },
-        { id: 'discord', name: 'Discord', emoji: '🤖', defaultLimit: 0.2 },
-        { id: 'reddit', name: 'Reddit', emoji: '🤖', defaultLimit: 0.15 }
+        { id: 'whatsapp', name: 'WhatsApp', emoji: '💬', defaultLimit: 0.15 }
     ];
 
     let userApps = [
@@ -292,293 +329,233 @@
         { id: 'pubg', name: 'PUBG Mobile', emoji: '🪂', isActive: true, currentLimit: 0.4 }
     ];
 
+    const STORAGE_KEY = 'weAnalyzerData_v3';
+    function saveData() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                subDate: document.getElementById('subDate').value,
+                totalGB: document.getElementById('totalGB').value,
+                usedGB: document.getElementById('usedGB').value,
+                remDays: document.getElementById('remDays').value,
+                deviceCount: document.getElementById('deviceCount').value,
+                userApps: userApps
+            }));
+        } catch (e) {}
+    }
+    
+    function loadData() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return;
+            const saved = JSON.parse(raw);
+            if (saved.subDate) document.getElementById('subDate').value = saved.subDate;
+            if (saved.totalGB) document.getElementById('totalGB').value = saved.totalGB;
+            if (saved.usedGB) document.getElementById('usedGB').value = saved.usedGB;
+            if (saved.remDays) document.getElementById('remDays').value = saved.remDays;
+            if (saved.deviceCount) document.getElementById('deviceCount').value = saved.deviceCount;
+            if (Array.isArray(saved.userApps) && saved.userApps.length > 0) userApps = saved.userApps;
+
+            let total = parseFloat(document.getElementById('totalGB').value) || 0;
+            let used = parseFloat(document.getElementById('usedGB').value) || 0;
+            document.getElementById('remGB').value = total > 0 ? Math.max(total - used, 0) : '';
+        } catch (e) {}
+    }
+
+    ['subDate', 'totalGB', 'usedGB', 'remDays', 'deviceCount'].forEach(id => {
+        document.getElementById(id).addEventListener('input', saveData);
+    });
+    
     document.getElementById('usedGB').addEventListener('input', function() {
         let total = parseFloat(document.getElementById('totalGB').value) || 0;
         let used = parseFloat(this.value) || 0;
         if(used < 0) { used = 0; this.value = 0; }
-        let rem = total - used;
-        if(rem < 0) rem = 0;
-        document.getElementById('remGB').value = rem;
+        document.getElementById('remGB').value = Math.max(total - used, 0);
     });
-
+    
     document.getElementById('totalGB').addEventListener('input', function() {
         let total = parseFloat(this.value) || 0;
         let used = parseFloat(document.getElementById('usedGB').value) || 0;
-        let rem = total - used;
-        if(rem < 0) { rem = 0; document.getElementById('usedGB').value = total; }
-        document.getElementById('remGB').value = rem;
+        if(total - used < 0) { document.getElementById('usedGB').value = total; }
+        document.getElementById('remGB').value = Math.max(total - parseFloat(document.getElementById('usedGB').value), 0);
     });
 
     function calculateDaysPassed(subDateStr) {
-        if(!subDateStr) return null;
+        if(!subDateStr) return 1;
         const subDate = new Date(subDateStr + 'T00:00:00');
-        const today = new Date();
-        today.setHours(0,0,0,0);
+        const today = new Date(); today.setHours(0,0,0,0);
         let diffDays = Math.round((today - subDate) / (1000 * 60 * 60 * 24));
-        if(isNaN(diffDays) || diffDays < 1) diffDays = 1;
-        return diffDays;
+        return isNaN(diffDays) || diffDays < 1 ? 1 : diffDays;
     }
 
     function requestDeveloperAccess() {
         if(isAdminLoggedIn) { document.getElementById('adminPanel').style.display = 'block'; return; }
-        if(isLocked()) { alert("⛔ تم قفل محاولات الدخول مؤقتاً. حاول بعد " + remainingLockSeconds() + " ثانية."); return; }
-
-        let u = prompt("⚠️ هذه الخاصية مخصصة للمطور فقط.\n\nضع اليوزر (اسم المستخدم):");
-        if(!u) return;
-        let p = prompt("ضع الباسورد (كلمة المرور):");
-        if(!p) return;
-        u = u.trim(); p = p.trim();
-
-        try {
-            if(btoa(u) === ENCODED_USER && btoa(p) === ENCODED_PASS) {
-                isAdminLoggedIn = true; failedAttempts = 0;
-                document.getElementById('adminPanel').style.display = 'block';
-                document.getElementById('btnAddGlobalApp').style.display = 'block';
-                document.getElementById('customAppFormContainer').style.display = 'block';
-                renderActiveApps();
-                alert("✅ تم التحقق بنجاح. تم فتح لوحة التحكم المتقدمة.");
-            } else {
-                failedAttempts++;
-                if(failedAttempts >= MAX_ATTEMPTS) {
-                    lockUntil = Date.now() + LOCK_MS; failedAttempts = 0;
-                    alert("⛔ محاولات كتير غلط. اتقفل الدخول 30 ثانية.");
-                } else {
-                    alert("❌ بيانات دخول غير صحيحة! (محاولة " + failedAttempts + " من " + MAX_ATTEMPTS + ")");
-                }
-            }
-        } catch(e) { alert("خطأ في المصادقة."); }
+        document.getElementById('adminUserField').value = ''; document.getElementById('adminPassField').value = '';
+        document.getElementById('adminLoginModal').style.display = 'flex';
     }
-
-    function logoutAdmin() {
-        isAdminLoggedIn = false;
-        document.getElementById('adminPanel').style.display = 'none';
-        document.getElementById('btnAddGlobalApp').style.display = 'none';
-        document.getElementById('customAppFormContainer').style.display = 'none';
-        renderActiveApps();
-        alert("🔒 تم إغلاق وقفل لوحة المطور.");
+    function closeAdminLoginModal() { document.getElementById('adminLoginModal').style.display = 'none'; }
+    function submitAdminLogin() {
+        let u = document.getElementById('adminUserField').value.trim();
+        let p = document.getElementById('adminPassField').value.trim();
+        if(btoa(u) === ENCODED_USER && btoa(p) === ENCODED_PASS) {
+            isAdminLoggedIn = true; closeAdminLoginModal();
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('btnAddGlobalApp').style.display = 'block';
+            document.getElementById('customAppFormContainer').style.display = 'block';
+            renderActiveApps();
+        } else { alert("❌ خطأ في المصادقة!"); }
     }
-
-    function addAppToDatabase() {
-        if(!isAdminLoggedIn) { alert("غير مسموح لك بالإضافة!"); return; }
-        let nameRaw = document.getElementById('newDbAppName').value;
-        if(nameRaw.trim() === "") { alert("يجب كتابة اسم التطبيق!"); return; }
-        let name = nameRaw.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        let emoji = document.getElementById('newDbAppEmoji').value || '📱';
-        let limit = parseFloat(document.getElementById('newDbAppLimit').value) || 200;
-        availableApps.push({ id: 'app_' + Math.random().toString(36).substr(2,5), name: name, emoji: emoji, defaultLimit: limit });
-        document.getElementById('newDbAppName').value = '';
-        document.getElementById('newDbAppEmoji').value = '';
-        document.getElementById('newDbAppLimit').value = '';
-        alert("تمت إضافة التطبيق للقاعدة بنجاح.");
-    }
+    function logoutAdmin() { isAdminLoggedIn = false; document.getElementById('adminPanel').style.display = 'none'; document.getElementById('btnAddGlobalApp').style.display = 'none'; document.getElementById('customAppFormContainer').style.display = 'none'; renderActiveApps(); }
 
     function openModal() { document.getElementById('appModal').style.display = 'flex'; renderModalList(); }
     function closeModal() { document.getElementById('appModal').style.display = 'none'; }
-
     function renderModalList() {
-        const modalList = document.getElementById('modalAppList');
-        modalList.innerHTML = '<div style="font-size:11.5px; color:#8e919b; margin-bottom:8px;">اختر من القائمة الجاهزة:</div>';
+        const modalList = document.getElementById('modalAppList'); modalList.innerHTML = '';
         availableApps.forEach(app => {
             if(userApps.find(ua => ua.id === app.id)) return;
-            let div = document.createElement('div');
-            div.className = 'list-app-item';
+            let div = document.createElement('div'); div.className = 'list-app-item';
             div.innerHTML = `<div class="list-app-info"><span class="app-emoji">${app.emoji}</span><span>${app.name}</span></div><button class="btn-add-small" onclick="addAppToActive('${app.id}')">إضافة</button>`;
             modalList.appendChild(div);
         });
     }
-
     function addAppToActive(appId) {
         let app = availableApps.find(a => a.id === appId);
-        if(app && !userApps.find(ua => ua.id === appId)) {
-            userApps.push({ ...app, isActive: true, currentLimit: app.defaultLimit });
-            closeModal(); renderActiveApps();
-        }
+        if(app && !userApps.find(ua => ua.id === appId)) { userApps.push({ ...app, isActive: true, currentLimit: app.defaultLimit }); closeModal(); renderActiveApps(); saveData(); }
     }
-
     function addCustomApp() {
-        if(!isAdminLoggedIn) { alert("ميزة مخصصة للمطور فقط!"); return; }
-        let nameRaw = document.getElementById('customName').value;
-        if(nameRaw.trim() === "") { alert("يرجى كتابة اسم التطبيق."); return; }
-        let name = nameRaw.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        let emoji = document.getElementById('customEmoji').value || '💻';
-        let limit = parseFloat(document.getElementById('customLimit').value) || 200;
-        let customId = 'custom_' + Math.random().toString(36).substr(2,5);
-        userApps.push({ id: customId, name: name, emoji: emoji, isActive: true, currentLimit: limit });
-        document.getElementById('customName').value = '';
-        document.getElementById('customEmoji').value = '';
-        document.getElementById('customLimit').value = '';
-        closeModal(); renderActiveApps();
+        if(!isAdminLoggedIn) return;
+        let name = document.getElementById('customName').value.replace(/</g, "&lt;"); if(name.trim() === "") return;
+        userApps.push({ id: 'c_' + Math.random().toString(36).substr(2,4), name: name, emoji: document.getElementById('customEmoji').value || '💻', isActive: true, currentLimit: parseFloat(document.getElementById('customLimit').value) || 0.2 });
+        closeModal(); renderActiveApps(); saveData();
     }
-
-    function removeApp(appId) {
-        if(!isAdminLoggedIn) { alert("حذف التطبيقات مخصص للمطور فقط!"); return; }
-        userApps = userApps.filter(a => a.id !== appId);
-        renderActiveApps();
-    }
-
+    function removeApp(appId) { userApps = userApps.filter(a => a.id !== appId); renderActiveApps(); saveData(); }
+    
     function renderActiveApps() {
-        const container = document.getElementById('activeAppsContainer');
-        container.innerHTML = '';
-        if(userApps.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:12px; color:#8e919b; font-size:12px;">لم تقم بإضافة أي تطبيق بعد.</div>';
-            return;
-        }
+        const container = document.getElementById('activeAppsContainer'); container.innerHTML = '';
         userApps.forEach(app => {
-            let div = document.createElement('div');
-            div.className = 'active-app-item';
-            let deleteBtnDisplay = isAdminLoggedIn ? 'inline-block' : 'none';
-            div.innerHTML = `
-                <div class="app-title-group"><span class="app-emoji">${app.emoji}</span><span class="app-name-text">${app.name}</span></div>
+            let div = document.createElement('div'); div.className = 'active-app-item';
+            div.innerHTML = `<div class="app-title-group"><span class="app-emoji">${app.emoji}</span><span class="app-name-text">${app.name}</span></div>
                 <div style="display:flex; align-items:center;">
-                    <input type="number" class="app-limit-input" value="${app.currentLimit||0}" oninput="updateAppLimit('${app.id}', this.value)" min="0">
+                    <input type="number" class="app-limit-input" value="${app.currentLimit||0}" oninput="updateAppLimit('${app.id}', this.value)" min="0" step="0.1">
                     <label class="switch"><input type="checkbox" ${app.isActive?'checked':''} onchange="toggleApp('${app.id}', this.checked)"><span class="slider"></span></label>
-                    <button class="remove-btn" style="display:${deleteBtnDisplay};" onclick="removeApp('${app.id}')" title="حذف">×</button>
+                    <button class="remove-btn" style="display:${isAdminLoggedIn?'inline-block':'none'};" onclick="removeApp('${app.id}')">×</button>
                 </div>`;
             container.appendChild(div);
         });
     }
+    function updateAppLimit(appId, val) { let app = userApps.find(a => a.id === appId); if(app) app.currentLimit = val === "" ? 0 : parseFloat(val); saveData(); }
+    function toggleApp(appId, isChecked) { let app = userApps.find(a => a.id === appId); if(app) app.isActive = isChecked; saveData(); }
 
-    function updateAppLimit(appId, val) {
-        let app = userApps.find(a => a.id === appId);
-        if(app) app.currentLimit = val === "" ? 0 : parseFloat(val);
-    }
-
-    function toggleApp(appId, isChecked) {
-        let app = userApps.find(a => a.id === appId);
-        if(app) app.isActive = isChecked;
-    }
+    const AI_TONE_BANK = {
+        excellent: ["الاستهلاك ممتاز جداً. استمر على نفس النظام."],
+        safe: ["معدلك طبيعي وآمن. الباقة هتكفي لآخر الشهر براحتك."],
+        warning: ["تنبيه! استهلاكك بدأ يزيد عن المعدل الطبيعي."],
+        danger: ["تحذير! معدل استهلاكك الحالي خطير جداً والباقة هتخلص قبل ميعادها."]
+    };
+    function pickTone(cat) { return AI_TONE_BANK[cat][Math.floor(Math.random() * AI_TONE_BANK[cat].length)]; }
 
     function startGeneralAIAnalysis() {
-        let subDateVal = document.getElementById('subDate').value;
         let total = parseFloat(document.getElementById('totalGB').value);
         let used = parseFloat(document.getElementById('usedGB').value);
         let days = parseInt(document.getElementById('remDays').value);
-
-        if(!subDateVal || isNaN(total) || isNaN(used) || isNaN(days) || total <= 0 || days <= 0) {
-            alert("يرجى إدخال البيانات الـ 5 الأساسية بشكل صحيح (بما فيها تاريخ بداية الاشتراك).");
-            return;
-        }
+        if(isNaN(total) || isNaN(used) || isNaN(days) || total <= 0 || days <= 0) return alert("يرجى إدخال البيانات.");
 
         document.getElementById('generalReportBox').style.display = 'none';
         document.getElementById('generalProcessingBox').style.display = 'block';
 
-        let timeLeft = 5;
-        const countdownEl = document.getElementById('generalCountdown');
-        const statusEl = document.getElementById('generalAiStatus');
-        const steps = ["جاري قراءة بيانات الباقة الأساسية...","حساب معدلات السحب الفعلي...","مطابقة الاستهلاك مع الأيام المتبقية...","إعداد التقرير العام للذكاء الاصطناعي..."];
+        if(voiceEnabled) speakAI("جاري تحليل بيانات الاستهلاك العام.");
 
-        let timerInterval = setInterval(() => {
-            timeLeft--;
-            countdownEl.innerText = timeLeft;
-            if(timeLeft >= 0 && timeLeft < 4) statusEl.innerText = steps[3 - timeLeft];
-            if(timeLeft <= 0) {
-                clearInterval(timerInterval);
-                document.getElementById('generalProcessingBox').style.display = 'none';
-                generateGeneralReport(total, used, days, subDateVal);
-            }
+        let tl = 5;
+        let iv = setInterval(() => {
+            tl--; document.getElementById('generalCountdown').innerText = tl;
+            if(tl <= 0) { clearInterval(iv); document.getElementById('generalProcessingBox').style.display = 'none'; generateGeneralReport(); }
         }, 1000);
     }
 
-    function generateGeneralReport(total, used, daysLeft, subDateVal) {
-        let rem = total - used;
-        if(rem < 0) rem = 0;
+    function generateGeneralReport() {
+        let total = parseFloat(document.getElementById('totalGB').value);
+        let used = parseFloat(document.getElementById('usedGB').value);
+        let daysLeft = parseInt(document.getElementById('remDays').value);
+        let subDateVal = document.getElementById('subDate').value;
+        let devices = parseInt(document.getElementById('deviceCount').value) || 1;
+
+        let rem = Math.max(total - used, 0);
         let daysPassed = calculateDaysPassed(subDateVal);
-        if(daysPassed === null) daysPassed = 1;
+        let actualDaily = used / daysPassed;
+        let allowedDaily = rem / daysLeft;
+        let perc = Math.min((used / total) * 100, 100).toFixed(0);
+        let daysUntilEmpty = actualDaily > 0 ? (rem / actualDaily) : Infinity;
 
-        let actualDailyUsage = used / daysPassed;
-        let allowedDailyUsage = rem / daysLeft;
+        const box = document.getElementById('generalReportBox');
+        document.getElementById('actualDaily').innerText = actualDaily.toFixed(2) + " جيجا/يوم";
+        document.getElementById('allowedDaily').innerText = allowedDaily.toFixed(2) + " جيجا/يوم";
+        document.getElementById('perDeviceDaily').innerText = (allowedDaily / devices).toFixed(2) + " جيجا/يوم (" + devices + " جهاز)";
+        document.getElementById('daysUntilEmpty').innerText = isFinite(daysUntilEmpty) ? Math.floor(daysUntilEmpty) + " يوم" : "لم يتم الاستهلاك";
 
-        const reportBox = document.getElementById('generalReportBox');
-        const titleEl = document.getElementById('generalReportTitle');
-        const adviceEl = document.getElementById('generalAiAdviceText');
+        let circle = document.getElementById('chartCircle');
+        document.getElementById('chartPercText').innerText = perc + "%";
+        setTimeout(() => { circle.style.strokeDasharray = `${perc}, 100`; }, 100);
 
-        document.getElementById('actualDaily').innerText = actualDailyUsage.toFixed(2) + " جيجا/يوم";
-        document.getElementById('allowedDaily').innerText = allowedDailyUsage.toFixed(2) + " جيجا/يوم";
+        let cat = "safe", title = "", userBadge = "";
+        if(used === 0) { box.className = "report-box status-safe"; title = "حالة الباقة ممتازة"; cat = "excellent"; circle.style.stroke = "var(--safe)"; userBadge = "حكيم النت"; }
+        else if (actualDaily <= allowedDaily) { box.className = "report-box status-safe"; title = "استهلاك طبيعي وآمن"; cat = "safe"; circle.style.stroke = "var(--safe)"; userBadge = "الموفر الذكي"; }
+        else if (actualDaily <= allowedDaily * 1.5) { box.className = "report-box status-warning"; title = "استهلاك زائد"; cat = "warning"; circle.style.stroke = "var(--warn)"; userBadge = "مدمن خفيف"; }
+        else { box.className = "report-box status-danger"; title = "استهلاك حرج"; cat = "danger"; circle.style.stroke = "var(--danger)"; userBadge = "مدمر الباقة"; }
 
-        let advice = "";
-        if(used === 0) {
-            reportBox.className = "report-box status-safe";
-            titleEl.innerText = "🟢 حالة الباقة العامة: ممتازة";
-            advice = "الباقة جديدة. حافظ على استهلاك يومي بحد أقصى (" + allowedDailyUsage.toFixed(1) + ") جيجا لضمان استمرارها حتى موعد التجديد.";
-        } else if (actualDailyUsage <= allowedDailyUsage) {
-            reportBox.className = "report-box status-safe";
-            titleEl.innerText = "🟢 حالة الباقة العامة: استهلاك طبيعي وآمن";
-            advice = "معدل استهلاكك العام ممتاز ومثالي. الباقة ستكفي الأيام المتبقية بالكامل.";
-        } else if (actualDailyUsage <= allowedDailyUsage * 1.5) {
-            reportBox.className = "report-box status-warning";
-            titleEl.innerText = "🟡 حالة الباقة العامة: استهلاك زائد (تنبيه)";
-            advice = "تنبيه: معدل السحب العام أعلى من الطبيعي. يفضل ترشيد استهلاك البيانات في الأيام القادمة.";
-        } else {
-            reportBox.className = "report-box status-danger";
-            titleEl.innerText = "🔴 حالة الباقة العامة: استهلاك حرج (خطر نفاذ)";
-            advice = "تحذير طوارئ: معدل الاستهلاك الفعلي سيفنفد الباقة قبل موعدها. يرجى مراجعة التطبيقات أدناه لتقليل السحب فوراً.";
-        }
+        document.getElementById('generalReportTitle').innerText = title;
+        document.getElementById('aiUserTitle').innerText = userBadge;
+        
+        let toneMsg = pickTone(cat);
+        document.getElementById('generalAiAdviceText').innerHTML = `<i>${toneMsg}</i>`;
+        box.style.display = 'block';
 
-        adviceEl.innerHTML = advice;
-        reportBox.style.display = 'block';
+        // الـ AI بينطق التقرير هنا
+        let speechText = `التقرير العام. ${title}. ${toneMsg}`;
+        speakAI(speechText);
     }
 
     function startAppsAIAnalysis() {
-        let total = parseFloat(document.getElementById('totalGB').value);
-        let used = parseFloat(document.getElementById('usedGB').value);
-        let days = parseInt(document.getElementById('remDays').value);
-
-        if(isNaN(total) || isNaN(used) || isNaN(days) || total <= 0 || days <= 0) {
-            alert("يرجى ملء البيانات الـ 5 الأساسية للباقة أولاً ليتمكن الـ AI من توزيع الحصص بدقة.");
-            return;
-        }
-
         document.getElementById('appsReportBox').style.display = 'none';
         document.getElementById('appsProcessingBox').style.display = 'block';
-
-        let timeLeft = 5;
-        const countdownEl = document.getElementById('appsCountdown');
-        const statusEl = document.getElementById('appsAiStatus');
-        const steps = ["تحليل أولويات التطبيقات المفعلة...","حساب السعة المتبقية الفعلية...","توزيع الحصص اليومية على التطبيقات...","صياغة خطة توزيع الاستهلاك..."];
-
-        let timerInterval = setInterval(() => {
-            timeLeft--;
-            countdownEl.innerText = timeLeft;
-            if(timeLeft >= 0 && timeLeft < 4) statusEl.innerText = steps[3 - timeLeft];
-            if(timeLeft <= 0) {
-                clearInterval(timerInterval);
-                document.getElementById('appsProcessingBox').style.display = 'none';
-                generateAppsReport(total, used, days);
-            }
+        if(voiceEnabled) speakAI("جاري تحليل أولويات التطبيقات.");
+        let tl = 4;
+        let iv = setInterval(() => {
+            tl--; document.getElementById('appsCountdown').innerText = tl;
+            if(tl <= 0) { clearInterval(iv); document.getElementById('appsProcessingBox').style.display = 'none'; generateAppsReport(); }
         }, 1000);
     }
 
-    function generateAppsReport(total, used, daysLeft) {
-        let rem = total - used;
-        if(rem < 0) rem = 0;
+    function generateAppsReport() {
+        let total = parseFloat(document.getElementById('totalGB').value);
+        let used = parseFloat(document.getElementById('usedGB').value);
+        let rem = Math.max(total - used, 0);
         let activeApps = userApps.filter(a => a.isActive);
         let totalActiveLimit = activeApps.reduce((sum, app) => sum + (parseFloat(app.currentLimit) || 0), 0);
 
-        const reportBox = document.getElementById('appsReportBox');
-        const adviceEl = document.getElementById('appsAiAdviceText');
-
-        let advice = `<b>💡 تحليل وتوزيع الذكاء الاصطناعي للأولويات:</b><br>`;
-        advice += `إجمالي المتبقي في الباقة: <b>${rem} جيجا</b> موزعة على <b>${daysLeft} يوم</b> متبقي.<br><br>`;
+        let advice = `<b>إجمالي المتبقي: ${rem.toFixed(2)} جيجا</b><br><br>`;
+        let speechAdvice = "";
 
         if(activeApps.length === 0) {
-            advice += `⚠️ لم تقم بتفعيل أي تطبيق لتوزيع الحصص عليه. يرجى تفعيل تطبيقات من القائمة أعلى ليعطيك خطة التوزيع.`;
+            advice += `⚠️ لم تفعل أي تطبيق!`;
+            speechAdvice = "يرجى تفعيل تطبيقات من القائمة لتوزيع الاستهلاك.";
         } else {
-            advice += `تم تحليل استهلاك التطبيقات ${activeApps.length} المفعلة، وبناءً عليه يقترح الـ AI الخطة التالية لكي تنتهي الباقة في موعدها:<br><br>`;
-            activeApps.forEach(app => {
-                advice += `• <b>${app.emoji} ${app.name}:</b> الاستهلاك المقدر (${(app.currentLimit/1024).toFixed(2)} جيجا). تم وزن الحصة لتناسب الـ (${daysLeft}) يوم المتبقية.<br>`;
+            [...activeApps].sort((a, b) => b.currentLimit - a.currentLimit).forEach(app => {
+                advice += `• <b>${app.emoji} ${app.name}:</b> ${app.currentLimit.toFixed(2)} جيجا/يوم<br>`;
             });
-            if(totalActiveLimit > (rem * 1024)) {
-                advice += `<br><span style="color:#ff8787"><b>🚨 تنبيه خطير:</b> مجموع استهلاك التطبيقات المفعلة أكبر من إجمالي المتبقي في باقتك! يجب خفض سقف تطبيقات مثل الفيديو والألعاب فوراً.</span>`;
+            if(totalActiveLimit > rem) {
+                advice += `<br><span style="color:#ff8787">🚨 تنبيه: استهلاك التطبيقات اليومي أكبر من الرصيد المتبقي!</span>`;
+                speechAdvice = "تحذير خطير. مجموع استهلاك التطبيقات اللي حددتها أكبر من الرصيد المتبقي في باقتك. يرجى التقليل فوراً.";
             } else {
-                advice += `<br><span style="color:#b2f2bb"><b>✅ خطة ناجحة:</b> استهلاك تطبيقاتك الحالي ضمن الحدود الآمنة للرصيد المتبقي. استمر بنفس الأولويات!</span>`;
+                advice += `<br><span style="color:#b2f2bb">✅ خطة ناجحة: استهلاك ضمن المسموح.</span>`;
+                speechAdvice = "خطة التوزيع ناجحة، واستهلاكك للتطبيقات ضمن الحدود الآمنة.";
             }
         }
-
-        adviceEl.innerHTML = advice;
-        reportBox.style.display = 'block';
+        
+        document.getElementById('appsAiAdviceText').innerHTML = advice;
+        document.getElementById('appsReportBox').style.display = 'block';
+        speakAI(speechAdvice);
     }
 
-    renderActiveApps();
+    loadData(); renderActiveApps();
 </script>
 
 </body>
