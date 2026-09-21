@@ -3,24 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#0f1115">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
     
-    <title>مدير استهلاك باقة WE - المحلل الذكي</title>
+    <title>مدير استهلاك باقة WE - المحلل الذكي (@yousef..hlal)</title>
+    
+    <!-- مكتبة تنسيق النصوص والـ Markdown للشات -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
         * { box-sizing: border-box; -webkit-user-select: none; user-select: none; }
         :root {
             --bg: #0f1115; --panel: #1a1d24; --border: #2d3139; --text: #e4e5e7;
             --muted: #a0a5b1; --accent: #8b40c6; --accent2: #5c2a82;
-            --safe: #2b8a3e; --warn: #e67700; --danger: #c92a2a;
+            --safe: #2b8a3e; --safe-light: #40c057;
+            --warn: #e67700; --warn-light: #fab005;
+            --danger: #c92a2a; --danger-light: #fa5252;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Arial, sans-serif;
             background-color: var(--bg); color: var(--text); margin: 0; padding: 10px;
             display: flex; justify-content: center; width: 100%; min-height: 100vh; overflow-x: hidden;
+            direction: rtl;
         }
         .container { width: 100%; max-width: 500px; position: relative; }
 
@@ -32,8 +38,12 @@
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         
         .we-logo {
-            color: var(--accent2); font-size: 20px; font-weight: bold; 
-            text-shadow: 0 0 10px rgba(92, 42, 130, 0.5); user-select: none;
+            color: var(--accent2); font-size: 19px; font-weight: bold; 
+            text-shadow: 0 0 10px rgba(92, 42, 130, 0.5); display: flex; align-items: center; gap: 6px;
+        }
+        .dev-tag-inline {
+            font-size: 11px; color: #b197fc; background: rgba(139, 64, 198, 0.2);
+            padding: 2px 6px; border-radius: 12px; border: 1px solid rgba(177, 151, 252, 0.3);
         }
         
         .voice-btn {
@@ -49,7 +59,7 @@
             padding: 10px; border-radius: 8px; box-sizing: border-box; outline: none; transition: 0.3s;
             -webkit-user-select: text; user-select: text; width: 100%; font-size: 15px;
         }
-        .app-limit-input { width: 70px; }
+        .app-limit-input { width: 70px; text-align: center; }
         .input-dark:focus, .app-limit-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(139, 64, 198, 0.2); }
 
         .btn-ai {
@@ -82,33 +92,31 @@
         .timer-text { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 6px;}
         .ai-status { font-size: 12px; color: var(--muted); }
 
-        .report-box { display: none; margin-top: 15px; padding: 15px; border-radius: 10px; animation: slideUp 0.5s ease; position: relative;}
+        /* الألوان التفاعلية للتقرير */
+        .report-box { display: none; margin-top: 15px; padding: 15px; border-radius: 10px; animation: slideUp 0.5s ease; position: relative; transition: 0.3s;}
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        .report-header { font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; display:flex; justify-content:space-between; align-items:center;}
-        .user-title { font-size: 12px; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 20px; color: #fff;}
-        .report-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom:4px;}
+        .report-box.status-safe { border: 1px solid var(--safe); background-color: rgba(43, 138, 62, 0.08); box-shadow: 0 0 15px rgba(64, 192, 87, 0.15); }
+        .report-box.status-warning { border: 1px solid var(--warn); background-color: rgba(230, 119, 0, 0.08); box-shadow: 0 0 15px rgba(250, 176, 5, 0.15); }
+        .report-box.status-danger { border: 1px solid var(--danger); background-color: rgba(201, 42, 42, 0.12); box-shadow: 0 0 20px rgba(250, 82, 82, 0.25); }
 
-        .status-safe { background-color: rgba(43, 138, 62, 0.1); border: 1px solid var(--safe); color: #b2f2bb; }
-        .status-warning { background-color: rgba(230, 119, 0, 0.1); border: 1px solid var(--warn); color: #ffe066; }
-        .status-danger { background-color: rgba(201, 42, 42, 0.1); border: 1px solid var(--danger); color: #ffc9c9; }
+        .report-header { font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; display:flex; justify-content:space-between; align-items:center;}
+        .user-title { font-size: 11.5px; padding: 3px 10px; border-radius: 20px; font-weight: bold; color: #fff; }
+        .user-title.safe { background-color: var(--safe); }
+        .user-title.warning { background-color: var(--warn); }
+        .user-title.danger { background-color: var(--danger); }
+
+        .report-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom:4px;}
 
         .ai-advice { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 12.5px; line-height: 1.5; border-right: 3px solid var(--accent); }
 
-        /* صندوق النصيحة الثابت */
-        .static-advice-card {
-            background-color: #14151a;
-            border: 1px solid var(--border);
-            border-right: 3px solid #f59f00;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            font-size: 12px;
-            line-height: 1.5;
-            color: #d7d8dc;
-        }
+        .smart-tips-box { margin-top: 12px; padding: 12px; background: rgba(20, 21, 26, 0.7); border-radius: 8px; border: 1px solid var(--border); font-size: 12px; line-height: 1.6; }
+        .smart-tips-title { font-weight: bold; color: #b197fc; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
+        .smart-tips-list { margin: 0; padding-right: 18px; color: var(--text); }
+        .smart-tips-list li { margin-bottom: 4px; }
 
-        /* Chart CSS */
+        .static-advice-card { background-color: #14151a; border: 1px solid var(--border); border-right: 3px solid #f59f00; padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 12px; line-height: 1.5; color: #d7d8dc; }
+
         .chart-container { display: flex; justify-content: center; align-items: center; margin: 15px 0; position: relative; }
         .circular-chart { display: block; margin: 0 auto; max-width: 120px; max-height: 120px; }
         .circle-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 3.8; }
@@ -126,10 +134,10 @@
         .app-emoji { font-size: 16px; flex-shrink: 0; }
         .app-name-text { color: #fff; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .remove-btn { background: none; border: none; color: #5c5f66; cursor: pointer; font-size: 16px; padding: 0 4px; transition: 0.2s; display: none; }
+        .remove-btn { background: none; border: none; color: #5c5f66; cursor: pointer; font-size: 18px; padding: 0 8px; transition: 0.2s; display: inline-block; font-weight: bold; }
         .remove-btn:hover { color: #fa5252; }
 
-        .btn-add-global { background-color: transparent; border: 1px dashed var(--accent); color: #b197fc; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 12px; transition: 0.2s; text-align: center; display: none; }
+        .btn-add-global { background-color: transparent; border: 1px dashed var(--accent); color: #b197fc; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 12px; transition: 0.2s; text-align: center; display: block; }
         .btn-add-global:hover { background-color: rgba(139, 64, 198, 0.1); }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000; }
@@ -159,16 +167,69 @@
         .dev-badge { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%); color: #fff; display: flex; justify-content: center; align-items: center; font-size: 15px; font-weight: bold; border: 2px solid #b197fc; box-shadow: 0 0 10px rgba(139, 64, 198, 0.5); letter-spacing: 1px; }
         .developer-footer p { margin: 0; font-size: 12.5px; color: var(--muted); }
         .developer-footer span { color: #b197fc; font-weight: bold; }
+
+        /* شات بوت مهندس الشبكات Ai Joo (في اليمين) */
+        .chat-float-btn {
+            position: fixed; bottom: 25px; right: 20px; z-index: 999999;
+            background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%);
+            color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 12px 18px;
+            border-radius: 50px; font-size: 13px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 8px 25px rgba(139, 64, 198, 0.4); transition: all 0.3s ease;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .chat-float-btn:hover { transform: translateY(-3px) scale(1.02); }
+
+        .chat-window {
+            position: fixed; bottom: 85px; right: 20px; width: 380px; max-width: 92vw;
+            height: 520px; background-color: #14151a; border: 1px solid var(--border);
+            border-radius: 16px; z-index: 999999; display: none; flex-direction: column;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6); overflow: hidden;
+        }
+        .chat-header { background: #1a1d24; padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .chat-header-info { display: flex; align-items: center; gap: 10px; }
+        .avatar-icon { width: 35px; height: 35px; background: linear-gradient(135deg, #2b8a3e, #8b40c6); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 16px; }
+        .chat-title { font-size: 13px; font-weight: bold; color: #fff; margin: 0; }
+        .chat-status { font-size: 10.5px; color: #40c057; display: flex; align-items: center; gap: 4px; }
+        
+        .chat-reset-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer; transition: 0.2s; }
+        .chat-reset-btn:hover { background: var(--accent); }
+        .chat-close-btn { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; padding: 0 4px; }
+
+        .chat-body { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #0f1115; }
+        .chat-bubble { max-width: 88%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; word-wrap: break-word; }
+        .chat-bubble.user { align-self: flex-end; background: linear-gradient(135deg, var(--accent2), var(--accent)); color: #fff; border-bottom-left-radius: 2px; }
+        .chat-bubble.ai { align-self: flex-start; background-color: #1a1d24; border: 1px solid var(--border); color: #e4e5e7; border-bottom-right-radius: 2px; }
+
+        .ai-joo-welcome {
+            background: linear-gradient(135deg, rgba(139, 64, 198, 0.25), rgba(26, 29, 36, 0.95));
+            border: 1px solid var(--accent); color: #fff; text-align: center; font-weight: bold;
+            font-size: 13.5px; padding: 14px; border-radius: 12px; box-shadow: 0 4px 15px rgba(139, 64, 198, 0.2);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .typing-indicator { display: flex; align-items: center; gap: 4px; padding: 10px 14px; }
+        .typing-dot { width: 6px; height: 6px; background: var(--muted); border-radius: 50%; animation: blink 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes blink { 0%, 80%, 100% { transform: scale(0); opacity: 0.3; } 40% { transform: scale(1); opacity: 1; } }
+
+        .quick-chips-container { padding: 8px 12px; background: #14151a; border-top: 1px solid var(--border); display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; }
+        .chip-btn { background: #1a1d24; border: 1px solid var(--border); color: var(--muted); padding: 5px 12px; border-radius: 15px; font-size: 11.5px; cursor: pointer; }
+        .chip-btn:hover { background: var(--accent); color: #fff; }
+
+        .chat-footer { padding: 10px 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; background: #1a1d24; }
+        .chat-input { flex: 1; background: #0f1115; border: 1px solid var(--border); color: #fff; padding: 9px 12px; border-radius: 8px; outline: none; font-size: 13px; }
+        .chat-send-btn { background: var(--accent); color: #fff; border: none; padding: 0 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="box-panel admin-panel" id="adminPanel">
-        <h3 style="color: #fa5252; margin-top:0; font-size:14px;">🔒 لوحة تحكم المطور</h3>
+        <h3 style="color: #fa5252; margin-top:0; font-size:14px;">🔒 لوحة تحكم المطور <span class="dev-tag-inline">@yousef..hlal</span></h3>
         <input type="text" id="newDbAppName" class="input-dark" placeholder="اسم التطبيق الجديد" style="margin-bottom:6px; font-size:13px; padding:8px;">
         <input type="text" id="newDbAppEmoji" class="input-dark" placeholder="الإيموجي (مثال: 🌐)" maxlength="2" style="margin-bottom:6px; font-size:13px; padding:8px;">
-        <input type="number" id="newDbAppLimit" class="input-dark" placeholder="الاستهلاك الافتراضي (ميجا)" min="0" style="margin-bottom:6px; font-size:13px; padding:8px;">
+        <input type="number" id="newDbAppLimit" class="input-dark" placeholder="الاستهلاك الافتراضي (جيجا)" min="0" step="0.1" style="margin-bottom:6px; font-size:13px; padding:8px;">
         <button class="btn-danger" onclick="addAppToDatabase()">إضافة التطبيق</button>
         <button class="btn-danger" style="background-color:#5c5f66; margin-top:6px;" onclick="logoutAdmin()">إغلاق اللوحة</button>
     </div>
@@ -177,7 +238,10 @@
         <button class="admin-login-btn" onclick="requestDeveloperAccess()">⚙️ Admin</button>
         
         <div class="header-top">
-            <div class="we-logo">🌐 WE Smart Analyzer</div>
+            <div class="we-logo">
+                <span>🌐 WE Smart Analyzer</span>
+                <span class="dev-tag-inline">@yousef..hlal</span>
+            </div>
             <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🔊 قراءة AI: مفعّل</button>
         </div>
 
@@ -198,8 +262,8 @@
             <input type="number" id="remGB" class="input-dark" placeholder="يتم حسابه تلقائياً" readonly style="opacity:0.7; cursor:not-allowed;">
         </div>
         <div class="input-group">
-            <label>5. الأيام المتبقية على التجديد</label>
-            <input type="number" id="remDays" class="input-dark" placeholder="مثال: 12" min="1">
+            <label>5. الأيام المتبقية على التجديد (محسوبة تلقائياً من 30 يوم)</label>
+            <input type="number" id="remDays" class="input-dark" placeholder="تتغير تلقائياً مع اختيار التاريخ" min="1">
         </div>
         <div class="input-group">
             <label>6. عدد الأجهزة على شبكة الواي فاي</label>
@@ -214,10 +278,11 @@
             <div class="ai-status" id="generalAiStatus">فحص الرصيد والأيام المتبقية...</div>
         </div>
 
+        <!-- صندوق التقرير التفاعلي (الألوان الخضراء والصفراء والحمراء) -->
         <div class="report-box" id="generalReportBox">
             <div class="report-header">
                 <span id="generalReportTitle"></span>
-                <span class="user-title" id="aiUserTitle"></span>
+                <span class="user-title" id="aiUserTitle">محلل WE الذكي @yousef..hlal</span>
             </div>
 
             <div class="chart-container">
@@ -235,27 +300,32 @@
             <div class="report-row"><span style="color:var(--muted)">الاستهلاك اليومي المسموح:</span><strong id="allowedDaily">0 جيجا/يوم</strong></div>
             <div class="report-row"><span style="color:var(--muted)">نصيب الجهاز الواحد يومياً:</span><strong id="perDeviceDaily">0 جيجا/يوم</strong></div>
             <div class="report-row"><span style="color:var(--muted)">الوقت المتوقع لنفاد الباقة:</span><strong id="daysUntilEmpty">-</strong></div>
+            
             <div class="ai-advice" id="generalAiAdviceText"></div>
+
+            <!-- النصائح الذكية المخصصة -->
+            <div class="smart-tips-box" id="smartTipsBox">
+                <div class="smart-tips-title">💡 نصائح عمليّة لترشيد استهلاك باقتك:</div>
+                <ul class="smart-tips-list" id="smartTipsList"></ul>
+            </div>
             
             <button class="btn-ai btn-whatsapp" onclick="shareToWhatsApp()">📤 مشاركة تحذير العائلة (WhatsApp)</button>
             <button class="btn-ai btn-print" onclick="window.print()">🖨️ طباعة أو حفظ التقرير (PDF)</button>
         </div>
     </div>
 
-    <!-- قسم التطبيقات مع إضافة صندوق النصيحة الثابت -->
     <div class="box-panel">
         <div class="section-header">
             <h3>استخدام التطبيقات حسب أولوياتك</h3>
             <p>حدد استخدامك بالجيجا لكل تطبيق (مثال: 1 جيجا، 0.5 جيجا...).</p>
         </div>
 
-        <!-- صندوق النصيحة الثابت -->
         <div class="static-advice-card">
-            ⚠️ <b>نصيحة:</b> الإفراط في استخدام تطبيقات الفيديو والألعاب بيستهلك باقتك بسرعة كبيرة، وبيقلل وقتك المفيد وتركيزك في المذاكرة، وممكن يأثر على نومك لو الاستخدام بالليل. حاول توازن استخدامك اليومي وخصص وقت محدد لكل تطبيق.
+            ⚠️ <b>نصيحة:</b> الإفراط في استخدام تطبيقات الفيديو والألعاب بيستهلك باقتك بسرعة كبيرة، وبيقلل وقتك المفيد وتركيزك في المذاكرة. حاول توازن استخدامك اليومي وخصص وقت محدد لكل تطبيق.
         </div>
 
         <div id="activeAppsContainer"></div>
-        <button class="btn-add-global" id="btnAddGlobalApp" onclick="openModal()">+ إضافة تطبيق أو لعبة من القائمة (20+)</button>
+        <button class="btn-add-global" id="btnAddGlobalApp" onclick="openModal()">+ إضافة تطبيق أو لعبة من القائمة</button>
         <button class="btn-ai btn-ai-apps" onclick="startAppsAIAnalysis()"><span>🧠 التحليل الذكي المتقدم للتطبيقات</span></button>
 
         <div class="processing-box" id="appsProcessingBox">
@@ -272,10 +342,11 @@
 
     <div class="developer-footer">
         <div class="dev-badge">Y.H</div>
-        <p>تم تصميم وتطوير الموقع بواسطة الطالب:<br><span>يوسف هلال أحمد</span> 🚀</p>
+        <p>تم تصميم وتطوير الموقع بواسطة الطالب:<br><span>يوسف هلال أحمد</span> (<b style="color:#b197fc;">@yousef..hlal</b>) 🚀</p>
     </div>
 </div>
 
+<!-- Modal قائمة التطبيقات -->
 <div class="modal-overlay" id="appModal" onclick="closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -288,13 +359,14 @@
                 <h4>➕ إضافة تطبيق مخصص جديد</h4>
                 <input type="text" id="customName" class="input-dark" placeholder="اسم التطبيق (مثال: Zoom)" style="margin-bottom:6px; font-size:13px; padding:8px;">
                 <input type="text" id="customEmoji" class="input-dark" placeholder="الإيموجي (مثال: 💻)" maxlength="2" style="margin-bottom:6px; font-size:13px; padding:8px;">
-                <input type="number" id="customLimit" class="input-dark" placeholder="الاستهلاك المقدر (ميجا)" min="0" style="margin-bottom:6px; font-size:13px; padding:8px;">
+                <input type="number" id="customLimit" class="input-dark" placeholder="الاستهلاك المقدر (جيجا)" min="0" step="0.1" style="margin-bottom:6px; font-size:13px; padding:8px;">
                 <button class="btn-ai" style="margin-top:0; padding:8px; font-size:12px;" onclick="addCustomApp()">إضافة للقائمة النشطة</button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal دخول المطور -->
 <div class="modal-overlay" id="adminLoginModal">
     <div class="modal-content" style="max-width:340px;" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -309,24 +381,63 @@
     </div>
 </div>
 
+<!-- زر الشات العائم -->
+<button class="chat-float-btn" onclick="toggleChatWindow()">
+    <span>⚡</span>
+    <span>مهندس الشبكات (Ai Joo)</span>
+    <span class="dev-tag-inline" style="background:rgba(255,255,255,0.2);">@yousef..hlal</span>
+</button>
+
+<div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <div class="avatar-icon">👨‍💻</div>
+            <div>
+                <div class="chat-title">مهندس شبكات WE الخبير (Ai Joo)</div>
+                <div class="chat-status"><span style="font-size:8px;">🟢</span> متصل جاهز للمساعدة | @yousef..hlal</div>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+            <button class="chat-reset-btn" onclick="resetChat()" title="فتح شات جديد">🔄 شات جديد</button>
+            <button class="chat-close-btn" onclick="toggleChatWindow()">×</button>
+        </div>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+        <div class="ai-joo-welcome" id="aiJooWelcome">
+            ✨ مرحبا Ai Joo موجود في اي وقت لمساعدتك 🌐
+        </div>
+    </div>
+
+    <div class="quick-chips-container">
+        <button class="chip-btn" onclick="sendQuickQuestion('ازاي اغير كلمة سر الواي فاي للراوتر؟')">🔑 تغيير الباسورد</button>
+        <button class="chip-btn" onclick="sendQuickQuestion('عندي تقطيع متكرر في النت، ايه الحل؟')">⚡ حل تقطيع النت</button>
+        <button class="chip-btn" onclick="sendQuickQuestion('ايه افضل قيمة MTU لراوتر WE لسرعة النت؟')">⚙️ ضبط الـ MTU</button>
+        <button class="chip-btn" onclick="sendQuickQuestion('ازاي اقفل الـ WPS لحماية الراوتر من الاختراق؟')">🛡️ إغلاق الـ WPS</button>
+        <button class="chip-btn" onclick="sendQuickQuestion('ازاي اقلل البنج للالعاب زي ببجي وفورتنايت؟')">🎮 تقليل البنج</button>
+    </div>
+
+    <div class="chat-footer">
+        <input type="text" id="chatInput" class="chat-input" placeholder="اكتب سؤالك التقني لـ Ai Joo..." onkeypress="handleChatKeyPress(event)">
+        <button class="chat-send-btn" onclick="sendNetEngineerMessage()">إرسال</button>
+    </div>
+</div>
+
+<!-- بداية الجافاسكريبت المجمعة بشكل صحيح -->
 <script>
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('keydown', e => {
-        const blocked = e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && e.keyCode == 85);
-        if (blocked) { e.preventDefault(); alert("⚠️ هذه المنطقة محمية!"); return false; }
-    });
+    const GEMINI_API_KEY = "AQ.Ab8RN6JauL_SwPFir0z5ezTG8SgJSTbuAjMibAJNpPr3rIkU2g";
 
     const ENCODED_USER = "QFlvdXNzZWYuSGVsYWw=";
     const ENCODED_PASS = "WTFZMlkzWTR5NXk2eTc=";
     let isAdminLoggedIn = false;
-    
     let voiceEnabled = true;
+
     function toggleVoice() {
         voiceEnabled = !voiceEnabled;
         document.getElementById('voiceBtn').innerText = voiceEnabled ? "🔊 قراءة AI: مفعّل" : "🔇 قراءة AI: صامت";
         if(!voiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
     }
-    
+
     function speakAI(text) {
         if(!voiceEnabled || !('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
@@ -345,7 +456,7 @@
         let advice = adviceNode ? adviceNode.innerText : "";
         let daysEmpty = document.getElementById('daysUntilEmpty').innerText;
 
-        let text = `🌐 *تقرير WE Smart Analyzer* 🌐\n\n` +
+        let text = `🌐 *تقرير WE Smart Analyzer (@yousef..hlal)* 🌐\n\n` +
                    `👤 لقب الاستهلاك: *${badge}*\n` +
                    `📊 الحالة: *${title}*\n` +
                    `📉 المستخدم: ${used} جيجا من ${total} جيجا\n` +
@@ -373,7 +484,9 @@
         { id: 'pubg', name: 'PUBG Mobile', emoji: '🪂', isActive: true, currentLimit: 0.4 }
     ];
 
-    const STORAGE_KEY = 'weAnalyzerData_v3';
+    // استعادة الذاكرة القديمة
+    const STORAGE_KEY = 'weAnalyzerData';
+    
     function saveData() {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -389,8 +502,8 @@
     
     function loadData() {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return;
+            let raw = localStorage.getItem('weAnalyzerData_v3') || localStorage.getItem('weAnalyzerData_v2') || localStorage.getItem('weAnalyzerData');
+            if (!raw) { renderActiveApps(); return; }
             const saved = JSON.parse(raw);
             if (saved.subDate) document.getElementById('subDate').value = saved.subDate;
             if (saved.totalGB) document.getElementById('totalGB').value = saved.totalGB;
@@ -402,10 +515,26 @@
             let total = parseFloat(document.getElementById('totalGB').value) || 0;
             let used = parseFloat(document.getElementById('usedGB').value) || 0;
             document.getElementById('remGB').value = total > 0 ? Math.max(total - used, 0) : '';
-        } catch (e) {}
+            renderActiveApps();
+        } catch (e) { renderActiveApps(); }
     }
 
-    ['subDate', 'totalGB', 'usedGB', 'remDays', 'deviceCount'].forEach(id => {
+    document.getElementById('subDate').addEventListener('change', function() {
+        let subDateStr = this.value;
+        if (subDateStr) {
+            const subDate = new Date(subDateStr + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            let diffTime = today - subDate;
+            let daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            if (daysPassed < 0) daysPassed = 0;
+            let remDaysCalculated = Math.max(30 - daysPassed, 0);
+            document.getElementById('remDays').value = remDaysCalculated;
+        }
+        saveData();
+    });
+
+    ['totalGB', 'usedGB', 'remDays', 'deviceCount'].forEach(id => {
         document.getElementById(id).addEventListener('input', saveData);
     });
     
@@ -443,12 +572,11 @@
         if(btoa(u) === ENCODED_USER && btoa(p) === ENCODED_PASS) {
             isAdminLoggedIn = true; closeAdminLoginModal();
             document.getElementById('adminPanel').style.display = 'block';
-            document.getElementById('btnAddGlobalApp').style.display = 'block';
             document.getElementById('customAppFormContainer').style.display = 'block';
             renderActiveApps();
         } else { alert("❌ خطأ في المصادقة!"); }
     }
-    function logoutAdmin() { isAdminLoggedIn = false; document.getElementById('adminPanel').style.display = 'none'; document.getElementById('btnAddGlobalApp').style.display = 'none'; document.getElementById('customAppFormContainer').style.display = 'none'; renderActiveApps(); }
+    function logoutAdmin() { isAdminLoggedIn = false; document.getElementById('adminPanel').style.display = 'none'; document.getElementById('customAppFormContainer').style.display = 'none'; renderActiveApps(); }
 
     function openModal() { document.getElementById('appModal').style.display = 'flex'; renderModalList(); }
     function closeModal() { document.getElementById('appModal').style.display = 'none'; }
@@ -474,14 +602,15 @@
     function removeApp(appId) { userApps = userApps.filter(a => a.id !== appId); renderActiveApps(); saveData(); }
     
     function renderActiveApps() {
-        const container = document.getElementById('activeAppsContainer'); container.innerHTML = '';
+        const container = document.getElementById('activeAppsContainer'); if(!container) return;
+        container.innerHTML = '';
         userApps.forEach(app => {
             let div = document.createElement('div'); div.className = 'active-app-item';
             div.innerHTML = `<div class="app-title-group"><span class="app-emoji">${app.emoji}</span><span class="app-name-text">${app.name}</span></div>
-                <div style="display:flex; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
                     <input type="number" class="app-limit-input" value="${app.currentLimit||0}" oninput="updateAppLimit('${app.id}', this.value)" min="0" step="0.1">
                     <label class="switch"><input type="checkbox" ${app.isActive?'checked':''} onchange="toggleApp('${app.id}', this.checked)"><span class="slider"></span></label>
-                    <button class="remove-btn" style="display:${isAdminLoggedIn?'inline-block':'none'};" onclick="removeApp('${app.id}')">×</button>
+                    <button class="remove-btn" onclick="removeApp('${app.id}')">×</button>
                 </div>`;
             container.appendChild(div);
         });
@@ -489,30 +618,32 @@
     function updateAppLimit(appId, val) { let app = userApps.find(a => a.id === appId); if(app) app.currentLimit = val === "" ? 0 : parseFloat(val); saveData(); }
     function toggleApp(appId, isChecked) { let app = userApps.find(a => a.id === appId); if(app) app.isActive = isChecked; saveData(); }
 
+    function addAppToDatabase() {
+        let name = document.getElementById('newDbAppName').value.trim();
+        let emoji = document.getElementById('newDbAppEmoji').value.trim() || '🌐';
+        let limit = parseFloat(document.getElementById('newDbAppLimit').value) || 0.5;
+        if(!name) return alert("يرجى إدخال اسم التطبيق!");
+        availableApps.push({ id: 'db_' + Math.random().toString(36).substr(2,4), name: name, emoji: emoji, defaultLimit: limit });
+        alert("✅ تم إدخال التطبيق في قاعدة البيانات بنجاح!");
+        document.getElementById('newDbAppName').value = '';
+    }
+
     const AI_TONE_BANK = {
         excellent: [
-            "الاستهلاك ممتاز جداً! الرصيد المتبقي بحري وهيكفي لنهاية الشهر وتزود كمان براحتك.",
-            "أنت كده حكيم النت بجد! السحب هادئ والوضع في السيف زون تماماً ومفيش أي خطورة.",
-            "الله ينور، باقتك محمية وفي المضمون، كمل بنفس السرعة دي ومش هتحس بأي نقص نهائي.",
-            "استهلاكك رايق ومش محتاج أي تقشف، الباقة قاعدة تتفرج عليك وهي مطمنة وسعيدة."
+            "الاستهلاك ممتاز جداً! الرصيد المتبقي كافي جداً ونسبة السحب مريحة لنهاية الشهر.",
+            "أنت كده حكيم النت بجد! السحب هادئ والوضع في السيف زون تماماً."
         ],
         safe: [
             "وضع الباقة آمن ومستقر. الاستهلاك ماشي مع الأيام المتبقية بمنتهى التوازن والعقل.",
-            "معدل طبيعي ومقبول جداً، مفيش أي قلق خالص، كمل سحبك بانتظام وهتكفي للآخر.",
-            "الوضع في التمام، السحب اليومي عادي ومحسوب، الباقة مكملة معاك للآخر وتمام التمام.",
-            "أنت ماشي على خطة مظبوطة ومحترمة، لا إسراف ولا تقشف مبالغ فيه."
+            "معدل طبيعي ومقبول جداً، مفيش أي قلق خالص، مكملة معاك للآخر."
         ],
         warning: [
-            "تنبيه بسيط: معدل السحب زاد شوية عن المعتاد، حاول توازن استخدامك في الأيام اللي جايين.",
-            "خد بالك! الباقة بتسحب أسرع شوية من الطبيعي، خف فيديوهات عالية الجودة وفيديوهات الريلز شوية.",
-            "إشارات تحذير خفيفة.. لو كملت بنفس السرعة دي ممكن الباقة تخلص قبل ميعاد التجديد بيومين تلاتة.",
-            "بدأنا ندخل في المنطقة اللي محتاجة حرص وتدقيق، ظبط استهلاكك عشان م تتفاجئش في الآخر."
+            "تنبيه بسيط: معدل السحب زاد شوية عن المعتاد، حاول توازن استخدامك في الأيام الجاية.",
+            "خد بالك! الباقة بتسحب أسرع شوية من الطبيعي، خف فيديوهات عالية الجودة."
         ],
         danger: [
-            "تحذير خطير! الباقة بتنزف بسرعة رهيبة ومعدل السحب غير مسيطر عليه خالص!",
-            "كارثة في الطريق! لو فضلت ساحب بالمعدل ده الباقة هتطير في أول أسبوع، الحق نفسك وفصل التحميلات الكبيرة!",
-            "استهلاك حرج جداً! الـ AI بينبهك إنك بتدمر الباقة، قلل اليوتيوب والتيك توك وفيديوهات الـ 4كي فورا!",
-            "الوضع خطير يا باشمهندس! سحبك عالي جداً مقارنة بالمتبقي، لازم ترشيد فوري للاستهلاك حالا!"
+            "تحذير خطير! الباقة بتنزف بسرعة ومعدل السحب عالي جداً!",
+            "كارثة في الطريق! لو فضلت ساحب بالمعدل ده الباقة هتخلص قبل ميعاد التجديد بكتير!"
         ]
     };
     function pickTone(cat) { 
@@ -524,12 +655,11 @@
         let total = parseFloat(document.getElementById('totalGB').value);
         let used = parseFloat(document.getElementById('usedGB').value);
         let days = parseInt(document.getElementById('remDays').value);
-        if(isNaN(total) || isNaN(used) || isNaN(days) || total <= 0 || days <= 0) return alert("يرجى إدخال البيانات.");
+        if(isNaN(total) || isNaN(used) || isNaN(days) || total <= 0 || days <= 0) return alert("يرجى إدخال البيانات بصورة صحيحة.");
 
         document.getElementById('generalReportBox').style.display = 'none';
         document.getElementById('generalProcessingBox').style.display = 'block';
-
-        if(voiceEnabled) speakAI("جاري تحليل بيانات الاستهلاك بالخوارزمية الذكية المطورة.");
+        if(voiceEnabled) speakAI("جاري تحليل بيانات الاستهلاك بالخوارزمية الذكية.");
 
         let tl = 4;
         let iv = setInterval(() => {
@@ -542,64 +672,75 @@
         let total = parseFloat(document.getElementById('totalGB').value) || 0;
         let used = parseFloat(document.getElementById('usedGB').value) || 0;
         let daysLeft = parseInt(document.getElementById('remDays').value) || 1;
-        let subDateVal = document.getElementById('subDate').value;
         let devices = parseInt(document.getElementById('deviceCount').value) || 1;
 
         let rem = Math.max(total - used, 0);
-        let daysPassed = calculateDaysPassed(subDateVal);
-        let actualDaily = used / daysPassed;
-        let allowedDaily = rem / daysLeft;
-        let perc = Math.min((used / total) * 100, 100).toFixed(0);
-        
-        let daysUntilEmpty = actualDaily > 0 ? (rem / actualDaily) : (daysLeft * 2);
+        let percentUsed = total > 0 ? Math.round((used / total) * 100) : 0;
+        let daysPassed = calculateDaysPassed(document.getElementById('subDate').value);
 
-        const box = document.getElementById('generalReportBox');
-        document.getElementById('actualDaily').innerText = actualDaily.toFixed(2) + " جيجا/يوم";
-        document.getElementById('allowedDaily').innerText = allowedDaily.toFixed(2) + " جيجا/يوم";
-        document.getElementById('perDeviceDaily').innerText = (allowedDaily / devices).toFixed(2) + " جيجا/يوم (" + devices + " جهاز)";
-        
-        if (rem === 0) {
-            document.getElementById('daysUntilEmpty').innerText = "انتهت الباقة بالكامل!";
-        } else {
-            document.getElementById('daysUntilEmpty').innerText = Math.ceil(daysUntilEmpty) + " يوم تقريباً";
-        }
+        let actualDaily = (used / daysPassed).toFixed(1);
+        let allowedDaily = (rem / daysLeft).toFixed(1);
+        let perDeviceDaily = (allowedDaily / devices).toFixed(2);
+        let daysUntilEmpty = actualDaily > 0 ? (rem / actualDaily).toFixed(1) + " يوم" : "غير محدد";
+
+        document.getElementById('actualDaily').innerText = actualDaily + " جيجا/يوم";
+        document.getElementById('allowedDaily').innerText = allowedDaily + " جيجا/يوم";
+        document.getElementById('perDeviceDaily').innerText = perDeviceDaily + " جيجا/يوم";
+        document.getElementById('daysUntilEmpty').innerText = daysUntilEmpty;
+        document.getElementById('chartPercText').innerText = percentUsed + "%";
+
+        let cat = 'safe';
+        if (percentUsed > 80 || actualDaily > allowedDaily * 1.5) cat = 'danger';
+        else if (percentUsed > 60 || actualDaily > allowedDaily) cat = 'warning';
+
+        let reportBox = document.getElementById('generalReportBox');
+        reportBox.className = 'report-box status-' + cat;
 
         let circle = document.getElementById('chartCircle');
-        document.getElementById('chartPercText').innerText = perc + "%";
-        setTimeout(() => { circle.style.strokeDasharray = `${perc}, 100`; }, 100);
-
-        let cat = "safe", title = "", userBadge = "";
-        let remainingRatio = rem / total;
-
-        if (rem === 0) {
-            box.className = "report-box status-danger"; title = "الباقة خلصت!"; cat = "danger"; circle.style.stroke = "var(--danger)"; userBadge = "مفلس نت";
-        } else if (used === 0) {
-            box.className = "report-box status-safe"; title = "الباقة جديدة وممتازة"; cat = "excellent"; circle.style.stroke = "var(--safe)"; userBadge = "حكيم النت";
-        } else if (remainingRatio >= 0.75) {
-            box.className = "report-box status-safe"; title = "استهلاك آمن جداً ومريح"; cat = "excellent"; circle.style.stroke = "var(--safe)"; userBadge = "الموفر الذكي";
-        } else if (daysUntilEmpty >= daysLeft) {
-            box.className = "report-box status-safe"; title = "طبيعي ومقبول"; cat = "safe"; circle.style.stroke = "var(--safe)"; userBadge = "مستخدم متوازن";
-        } else if (daysUntilEmpty >= (daysLeft * 0.5)) {
-            box.className = "report-box status-warning"; title = "استهلاك زائد"; cat = "warning"; circle.style.stroke = "var(--warn)"; userBadge = "مدمن خفيف";
-        } else {
-            box.className = "report-box status-danger"; title = "استهلاك حرج جداً"; cat = "danger"; circle.style.stroke = "var(--danger)"; userBadge = "مدمر الباقة";
+        let strokeColor = cat === 'danger' ? 'var(--danger-light)' : cat === 'warning' ? 'var(--warn-light)' : 'var(--safe-light)';
+        if(circle) {
+            circle.setAttribute('stroke-dasharray', `${percentUsed}, 100`);
+            circle.style.stroke = strokeColor;
         }
 
-        document.getElementById('generalReportTitle').innerText = title;
-        document.getElementById('aiUserTitle').innerText = userBadge;
-        
-        let toneMsg = pickTone(cat);
-        document.getElementById('generalAiAdviceText').innerHTML = `<i>${toneMsg}</i>`;
-        box.style.display = 'block';
+        let aiUserTitle = document.getElementById('aiUserTitle');
+        aiUserTitle.className = 'user-title ' + cat;
+        aiUserTitle.innerText = cat === 'danger' ? 'مستقبل حرج ⚠️' : cat === 'warning' ? 'مستقبل متوسط ⚡' : 'مستقبل آمن ✅';
 
-        let speechText = `التقرير العام. ${title}. ${toneMsg}`;
-        speakAI(speechText);
+        let toneMsg = pickTone(cat);
+        document.getElementById('generalAiAdviceText').innerText = toneMsg;
+
+        let statusTitle = cat === 'danger' ? "تحذير: استهلاك حرج" : cat === 'warning' ? "تنبيه: الاستهلاك مرتفع" : "الوضع آمن ومستقر";
+        document.getElementById('generalReportTitle').innerText = statusTitle;
+
+        let tipsListHtml = "";
+        if (cat === 'danger') {
+            tipsListHtml += "<li><b>قلل جودة الفيديو:</b> اختر جودة 360p أو 480p كحد أقصى في يوتيوب وفيسبوك.</li>";
+            tipsListHtml += "<li><b>أوقف التشغيل التلقائي:</b> أوقف خاصية Autoplay للفيديوهات في الفيسبوك وتيك توك.</li>";
+            tipsListHtml += "<li><b>تحديثات التطبيقات:</b> قم بإيقاف تحديثات المتجر التلقائية وحولها لـ Wi-Fi المباشر اليدوي فقط.</li>";
+            tipsListHtml += "<li><b>تحديد الأجهزة:</b> خصص حد استهلاك لكل جهاز على الواي بمعدل ثابت لمنع السحب الفجائي.</li>";
+        } else if (cat === 'warning') {
+            tipsListHtml += "<li><b>تجنب فيديو الـ HD:</b> حاول خفض دقة البث الفضائي أو الريلز بالليل.</li>";
+            tipsListHtml += "<li><b>تطبيق الموبايل:</b> أوقف تنزيل وسائط الواتساب والتليجرام التلقائية بالخلفية.</li>";
+            tipsListHtml += "<li><b>مراقبة الاستهلاك:</b> افحص الباقة كل يومين للتأكد من عدم تجاوز الاستهلاك المسموح.</li>";
+        } else {
+            tipsListHtml += "<li><b>استهلاك متوازن:</b> خطتك ممتازة، كمل بنفس المعدل مع الحفاظ على القواعد الأساسية.</li>";
+            tipsListHtml += "<li><b>تحديث النظام:</b> يمكنك إجراء تحديثات الأجهزة والبرامج بأمان الآن.</li>";
+        }
+        document.getElementById('smartTipsList').innerHTML = tipsListHtml;
+
+        document.getElementById('generalReportBox').style.display = 'block';
+        if(voiceEnabled) speakAI(toneMsg);
     }
 
     function startAppsAIAnalysis() {
+        let remGB = parseFloat(document.getElementById('remGB').value) || 0;
+        let remDays = parseInt(document.getElementById('remDays').value) || 1;
+        if(remGB <= 0) return alert("يرجى إدخال وتوقع المتبقي من الباقة أولاً!");
+
         document.getElementById('appsReportBox').style.display = 'none';
         document.getElementById('appsProcessingBox').style.display = 'block';
-        if(voiceEnabled) speakAI("جاري تحليل أولويات التطبيقات.");
+
         let tl = 4;
         let iv = setInterval(() => {
             tl--; document.getElementById('appsCountdown').innerText = tl;
@@ -608,47 +749,68 @@
     }
 
     function generateAppsReport() {
-        let total = parseFloat(document.getElementById('totalGB').value) || 0;
-        let used = parseFloat(document.getElementById('usedGB').value) || 0;
-        let rem = Math.max(total - used, 0);
-        let activeApps = userApps.filter(a => a.isActive);
-        let totalActiveLimit = activeApps.reduce((sum, app) => sum + (parseFloat(app.currentLimit) || 0), 0);
-
-        let advice = `<b>إجمالي المتبقي: ${rem.toFixed(2)} جيجا</b><br><br>`;
-        let speechAdvice = "";
-
-        if(activeApps.length === 0) {
-            advice += `⚠️ لم تفعل أي تطبيق!`;
-            speechAdvice = "يرجى تفعيل تطبيقات من القائمة لتوزيع الاستهلاك.";
-        } else {
-            [...activeApps].sort((a, b) => b.currentLimit - a.currentLimit).forEach(app => {
-                advice += `• <b>${app.emoji} ${app.name}:</b> ${app.currentLimit.toFixed(2)} جيجا/يوم<br>`;
-            });
-            
-            if(totalActiveLimit > rem) {
-                advice += `<br><div style="background:rgba(201,42,42,0.15); border:1px solid var(--danger); padding:10px; border-radius:8px; margin-top:10px; color:#ffc9c9;">` +
-                          `🚨 <b>سلبيات الاستهلاك المفرط للتطبيقات:</b><br>` +
-                          `مجموع استهلاك التطبيقات اليومي (${totalActiveLimit.toFixed(1)} جيجا) يتجاوز الرصيد المتبقي بالكامل (${rem.toFixed(1)} جيجا)! هذا سيؤدي إلى نفاذ الباقة بسرعة قياسية ودخول مرحلة السرعة البطشية أو انقطاع الإنترنت.</div>`;
-                speechAdvice = "تحذير خطير. الاستهلاك المفرط للتطبيقات سيؤدي إلى نفاذ الباقة بسرعة قياسية.";
-            } else if(totalActiveLimit > (rem / 3)) {
-                advice += `<br><div style="background:rgba(230,119,0,0.15); border:1px solid var(--warn); padding:10px; border-radius:8px; margin-top:10px; color:#ffe066;">` +
-                          `⚠️ <b>تنبيه الضغط العالي:</b><br>` +
-                          `معدل استهلاك التطبيقات مرتفع وقد يتسبب في استنزاف الباقة قبل ميعاد التجديد، يفضل الترشيد.</div>`;
-                speechAdvice = "تنبيه. معدل استهلاك التطبيقات مرتفع وقد يستنزف الباقة.";
-            } else {
-                advice += `<br><div style="background:rgba(43,138,62,0.15); border:1px solid var(--safe); padding:10px; border-radius:8px; margin-top:10px; color:#b2f2bb;">` +
-                          `✅ <b>خطة متوازنة:</b> استهلاك التطبيقات آمن ولا يمثل خطراً على الباقة.</div>`;
-                speechAdvice = "خطة متوازنة. استهلاك التطبيقات آمن ولا يمثل خطراً على الباقة.";
-            }
-        }
+        let remGB = parseFloat(document.getElementById('remGB').value) || 0;
+        let remDays = parseInt(document.getElementById('remDays').value) || 1;
         
-        document.getElementById('appsAiAdviceText').innerHTML = advice;
+        let activeApps = userApps.filter(a => a.isActive);
+        if(activeApps.length === 0) {
+            document.getElementById('appsAiAdviceText').innerHTML = "لا يوجد أي تطبيق نشط حالياً للتحليل.";
+            document.getElementById('appsReportBox').style.display = 'block';
+            return;
+        }
+
+        let totalDailyAppsConsumption = 0;
+        let reportHtml = "<strong>📋 التوزيع اليومي للتطبيقات المختارة:</strong><br><ul style='margin:5px 0; padding-right:18px;'>";
+
+        activeApps.forEach(app => {
+            let limit = parseFloat(app.currentLimit) || 0;
+            totalDailyAppsConsumption += limit;
+            reportHtml += `<li><b>${app.emoji} ${app.name}:</b> ${limit} جيجا/يوم</li>`;
+        });
+        reportHtml += "</ul>";
+
+        let totalAppsNeeded = totalDailyAppsConsumption * remDays;
+        reportHtml += `<br><b>إجمالي المطلوب للتطبيقات خلال ${remDays} يوم:</b> ${totalAppsNeeded.toFixed(1)} جيجا.<br>`;
+        reportHtml += `<b>المتبقي الفعلي لديك:</b> ${remGB} جيجا.<br><br>`;
+
+        if(totalAppsNeeded > remGB) {
+            reportHtml += `⚠️ <span style='color:#fa5252;'><b>تحذير:</b> معدل استهلاك التطبيقات اليومي سيؤدي لنفاد الباقة قبل الميعاد بـ ${( (totalAppsNeeded - remGB) / totalDailyAppsConsumption ).toFixed(1)} يوم! ننصح بتقليل سحب تطبيقات الفيديو.</span>`;
+        } else {
+            reportHtml += `✅ <span style='color:#40c057;'><b>ممتاز:</b> توزيع الاستهلاك الحالية متناسق وسيكفي باقي الأيام بسهولة ويتبقى لديك ${(remGB - totalAppsNeeded).toFixed(1)} جيجا احتياطي!</span>`;
+        }
+
+        document.getElementById('appsAiAdviceText').innerHTML = reportHtml;
         document.getElementById('appsReportBox').style.display = 'block';
-        speakAI(speechAdvice);
     }
 
-    loadData(); renderActiveApps();
-</script>
+    function toggleChatWindow() {
+        const chatWin = document.getElementById('chatWindow');
+        chatWin.style.display = (chatWin.style.display === 'flex') ? 'none' : 'flex';
+    }
 
-</body>
-</html>
+    function resetChat() {
+        chatHistory = [];
+        const chatBody = document.getElementById('chatBody');
+        chatBody.innerHTML = `
+            <div class="ai-joo-welcome" id="aiJooWelcome">
+                ✨ مرحبا Ai Joo موجود في اي وقت لمساعدتك 🌐
+            </div>
+        `;
+    }
+
+    function handleChatKeyPress(e) { if (e.key === 'Enter') sendNetEngineerMessage(); }
+    function sendQuickQuestion(q) { document.getElementById('chatInput').value = q; sendNetEngineerMessage(); }
+
+    let chatHistory = [];
+    const NETWORK_ENGINEER_PROMPT = `أنت مهندس شبكات خبير ومتخصص في أجهزة الراوتر لشركة WE وشركات مصر (Huawei DG8045, HG630, ZTE, TP-Link). اسمك "Ai Joo". تساعد المستخدمين بأسلوب مهندس مصري محترف وصبور ومرتب في الخطوات (1، 2، 3) لحل استفسارات الواي فاي والبنج وإعدادات الراوتر. تم تطويرك بواسطة المطور يوسف هلال (@yousef..hlal).`;
+    const AI_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"];
+
+    async function sendNetEngineerMessage() {
+        const inputEl = document.getElementById('chatInput');
+        const message = inputEl.value.trim();
+        if (!message) return;
+
+        const welcomeEl = document.getElementById('aiJooWelcome');
+        if (welcomeEl) welcomeEl.style.display = 'none';
+
+      
